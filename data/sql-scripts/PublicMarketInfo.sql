@@ -40,13 +40,13 @@ go
 -- # Programming ----
 
 create procedure [dbo].[get_symbol_price_sp]
-    @symbol varchar(16)  
+    @symbol varchar(16)
     , @fromTime datetime
     , @toTime datetime
 as   
     select 
       [ExchangePairName] as Symbol
-	  ,[Price]
+      ,[Price]
       ,[Exchange]
       ,[UtcDate] as [Timestamp]
     from [dbo].[PairPrices]

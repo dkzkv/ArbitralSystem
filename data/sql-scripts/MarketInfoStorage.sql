@@ -112,7 +112,7 @@ go
 -- # Programming ----
 
 create procedure [dbo].[get_orderbook_sp]
-    @symbol varchar(16)  
+    @symbol varchar(16)
     ,@fromTime datetime
     ,@toTime datetime
 as
@@ -136,15 +136,13 @@ go
 
 
 create procedure [dbo].[get_bot_statuses_history_sp]
-    @symbol varchar(16)  
-    , @fromTime datetime
-    , @toTime datetime
+    @symbol varchar(16)
+    ,@fromTime datetime
+    ,@toTime datetime
 as   
-    select 
-      [Id]
-      ,[Exchange]
-      ,[PreviousStatus]
-      ,[CurrentStatus]
+    select
+      [Exchange]
+      ,[CurrentStatus] as [Status]
       ,[UtcChangedAt] as [Timestamp]
     from [dbo].[DistributerStates]
     where 
