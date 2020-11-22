@@ -95,14 +95,15 @@ go
 
 create view [dbo].[last_orderbooks_vw] 
 as
-select [Exchange]
-      ,[Symbol]
-      ,[Price]
-      
-      ,[Quantity] as Volume
-      ,[Direction]
-      
-      ,[UtcCatchAt] as [Timestamp]
+select 
+    [Exchange]
+    ,[Symbol]
+    ,[Price]
+    
+    ,[Quantity] as Volume
+    ,[Direction]
+    
+    ,[UtcCatchAt] as [Timestamp]
 from [dbo].[OrderbookPriceEntries]
 where [UtcCatchAt] > DATEADD(DAY, -7, GETDATE())
 
@@ -142,6 +143,7 @@ create procedure [dbo].[get_bot_statuses_history_sp]
 as   
     select
       [Exchange]
+      ,[Symbol]
       ,[CurrentStatus] as [Status]
       ,[UtcChangedAt] as [Timestamp]
     from [dbo].[DistributerStates]
