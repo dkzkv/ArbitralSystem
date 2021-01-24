@@ -1,0 +1,9 @@
+default:
+  depth_in_minutes: 720
+  exchange_fee_pcnt: 0.001
+  min_exchange_n: 2
+  stable_coin_symbol: 'USDT'
+  risks:
+    min_order_volume_in_usdt: 0.09
+    max_order_volume_in_usdt: 99.9
+  connected_bot_status: 4

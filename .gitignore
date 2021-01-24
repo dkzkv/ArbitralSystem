@@ -268,3 +268,7 @@ src/RSPK.Apgm.AngularUI/package-lock.json
 *.zip
 *.7z
 src/RSPK.Apgm.Migrator/Logs/Logs.txt
+
+
+# Data analysis projects ignore list
+.Rproj.user
