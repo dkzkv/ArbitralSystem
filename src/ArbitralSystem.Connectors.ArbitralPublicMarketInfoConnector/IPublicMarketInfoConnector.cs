@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ArbitralSystem.Common.Pagination;
+using ArbitralSystem.Connectors.ArbitralPublicMarketInfoConnector.Models;
 using ArbitralSystem.Connectors.Core.Common;
 using ArbitralSystem.Connectors.Core.Models;
 using ArbitralSystem.Domain.MarketInfo;
 
-namespace ArbitralSystem.Connectors.Core.Arbitral
+namespace ArbitralSystem.Connectors.ArbitralPublicMarketInfoConnector
 {
     public interface IPublicMarketInfoConnector
     {

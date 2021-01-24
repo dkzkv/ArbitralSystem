@@ -11,6 +11,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\ArbitralSystem.Common\ArbitralSystem.Common.csproj" />
+      <ProjectReference Include="..\ArbitralSystem.Connectors.ArbitralPublicMarketInfoConnector\ArbitralSystem.Connectors.ArbitralPublicMarketInfoConnector.csproj" />
       <ProjectReference Include="..\ArbitralSystem.Connectors.Core\ArbitralSystem.Connectors.Core.csproj" />
     </ItemGroup>
 

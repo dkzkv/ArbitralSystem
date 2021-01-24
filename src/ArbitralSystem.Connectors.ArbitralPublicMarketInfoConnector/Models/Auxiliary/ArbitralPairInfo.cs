@@ -1,10 +1,9 @@
 using System;
-using ArbitralSystem.Connectors.Core.Models;
 using ArbitralSystem.Domain.MarketInfo;
 
-namespace ArbitralSystem.Connectors.ArbitralPublicMarketInfoConnector.Models
+namespace ArbitralSystem.Connectors.ArbitralPublicMarketInfoConnector.Models.Auxiliary
 {
-    public class ArbitralPairInfo : IArbitralPairInfo
+    internal class ArbitralPairInfo : IArbitralPairInfo
     {
         public Exchange Exchange { get;  set; }
         public string UnificatedPairName { get; set; }

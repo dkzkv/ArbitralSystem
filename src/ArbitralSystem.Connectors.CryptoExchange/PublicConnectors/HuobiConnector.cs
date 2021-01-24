@@ -13,12 +13,12 @@ using JetBrains.Annotations;
 
 namespace ArbitralSystem.Connectors.CryptoExchange.PublicConnectors
 {
-    internal class HuobiPublicConnector : BasePublicConnector , IPublicConnector
+    internal class HuobiConnector : BaseConnector , IPublicConnector
     {
         private readonly IDtoConverter _converter;
         private readonly IHuobiClient _huobiClient;
 
-        public HuobiPublicConnector([NotNull] IDtoConverter converter,
+        public HuobiConnector([NotNull] IDtoConverter converter,
             IHuobiClient huobiClient = null)
         {
             if (huobiClient == null)

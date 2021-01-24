@@ -3,6 +3,8 @@ marketinfo-storage:
   stdin_open: true
   tty: true
   image: localhost:5050/marketinfo-storage
+  environment:
+    - BUILD_ENVIRONMENT=prod
   entrypoint:
     - dotnet
     - ArbitralSystem.Storage.MarketInfoStorageService.dll
@@ -12,6 +14,8 @@ marketinfo-aggregator-1:
   stdin_open: true
   tty: true
   image: localhost:5050/marketinfo-aggregator
+  environment:
+    - BUILD_ENVIRONMENT=prod
   entrypoint:
     - dotnet
     - ArbitralSystem.Distributor.MarketInfoAggregatorService.dll
@@ -21,6 +25,8 @@ marketinfo-aggregator-2:
   stdin_open: true
   tty: true
   image: localhost:5050/marketinfo-aggregator
+  environment:
+    - BUILD_ENVIRONMENT=prod
   entrypoint:
     - dotnet
     - ArbitralSystem.Distributor.MarketInfoAggregatorService.dll    
@@ -33,6 +39,7 @@ public-market-info:
   ports:
     - '6001:6001'
   environment:
+    - BUILD_ENVIRONMENT=prod
     - ASPNETCORE_URLS=http://+:6001
   entrypoint:
     - dotnet
@@ -46,10 +53,10 @@ mq-manager-service:
   ports:
     - '7001:7001'
   environment:
+    - BUILD_ENVIRONMENT=prod
     - ASPNETCORE_URLS=http://+:7001
     - Connectors__PublicMarketService__BaseRestUrl=http://public-market-info:6001/
     - Connectors__PublicMarketService__DefaultTimeOutInMs=10000
   entrypoint:
     - dotnet
     - ArbitralSystem.Distributor.MQDistributor.MQManagerService.dll
-

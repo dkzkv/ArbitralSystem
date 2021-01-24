@@ -6,8 +6,7 @@ using ArbitralSystem.Domain.MarketInfo;
 
 namespace ArbitralSystem.Connectors.Core.Distributers
 {
-
-    public interface IOrderbookDistributor 
+    public interface IOrderbookDistributor
     {
         Exchange Exchange { get; }
 
@@ -19,5 +18,4 @@ namespace ArbitralSystem.Connectors.Core.Distributers
 
         event DistributerStateDelegate DistributerStateChanged;
     }
-
 }

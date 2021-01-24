@@ -16,14 +16,14 @@ using CoinEx.Net.Objects;
 
 namespace ArbitralSystem.Connectors.CryptoExchange.PublicConnectors
 {
-    internal class CoinExPublicConnector : BasePublicConnector, IPublicConnector
+    internal class CoinExConnector : BaseConnector, IPublicConnector
     {
         private readonly ICoinExConnector _coinExConnector;
         private readonly ICoinExClient _coinExClient;
         private readonly IDtoConverter _converter;
         private readonly ILogger _logger;
 
-        public CoinExPublicConnector(ICoinExConnector coinExConnector,
+        public CoinExConnector(ICoinExConnector coinExConnector,
             IDtoConverter converter,
             ILogger logger,
             ICoinExClient coinExClient = null)
@@ -58,7 +58,7 @@ namespace ArbitralSystem.Connectors.CryptoExchange.PublicConnectors
                         if (rawPairInfo.IsSuccess)
                         {
                             _logger.Debug("Pair information received: {@rawPairInfo}", rawPairInfo.Data);
-                            pairsForResult.Add(_converter.Convert<MarketInfo, PairInfo>(rawPairInfo.Data));
+                            pairsForResult.Add(_converter.Convert<IMarketInfo, PairInfo>(rawPairInfo.Data));
                         }
                     }
             }

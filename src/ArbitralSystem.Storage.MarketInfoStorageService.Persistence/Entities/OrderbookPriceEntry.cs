@@ -12,7 +12,7 @@ namespace ArbitralSystem.Storage.MarketInfoStorageService.Persistence.Entities
         public decimal Price { get;set;  }
         public decimal Quantity { get;set;  }
         public Exchange Exchange { get; set; }
-        public Direction Direction { get; set; }
+        public OrderSide OrderSide { get; set; }
         public DateTime UtcCatchAt { get; set; }
         
         public void Configure(EntityTypeBuilder<OrderbookPriceEntry> builder)
@@ -32,7 +32,7 @@ namespace ArbitralSystem.Storage.MarketInfoStorageService.Persistence.Entities
                 .HasColumnType("decimal(19,9)")
                 .IsRequired();
             
-            builder.Property(o => o.Direction)
+            builder.Property(o => o.OrderSide)
                 .HasColumnType("tinyint")
                 .IsRequired();
             

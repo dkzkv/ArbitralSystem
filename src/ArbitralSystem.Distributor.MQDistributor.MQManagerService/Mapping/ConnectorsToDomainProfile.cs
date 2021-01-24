@@ -1,4 +1,4 @@
-using ArbitralSystem.Connectors.Core.Models;
+using ArbitralSystem.Connectors.ArbitralPublicMarketInfoConnector.Models;
 using ArbitralSystem.Distributor.Core.Models;
 using AutoMapper;
 

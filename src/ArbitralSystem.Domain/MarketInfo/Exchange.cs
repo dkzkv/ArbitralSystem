@@ -16,6 +16,10 @@ namespace ArbitralSystem.Domain.MarketInfo
 
         Kraken = 5,
 
-        Kucoin = 6 
+        Kucoin = 6,
+        
+        Bitmex = 7,
+        
+        Bitfinex = 8
     }
 }

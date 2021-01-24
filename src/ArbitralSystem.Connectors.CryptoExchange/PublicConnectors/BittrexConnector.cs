@@ -15,12 +15,12 @@ using JetBrains.Annotations;
 
 namespace ArbitralSystem.Connectors.CryptoExchange.PublicConnectors
 {
-    internal class BittrexPublicConnector : BasePublicConnector, IPublicConnector
+    internal class BittrexConnector : BaseConnector, IPublicConnector
     {
         private readonly IBittrexClient _bittrexClient;
         private readonly IDtoConverter _converter;
 
-        public BittrexPublicConnector([NotNull] IDtoConverter converter,
+        public BittrexConnector([NotNull] IDtoConverter converter,
             IBittrexClient bittrexClient = null)
         {
             if (bittrexClient == null)

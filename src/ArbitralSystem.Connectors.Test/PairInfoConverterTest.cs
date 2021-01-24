@@ -72,6 +72,18 @@ namespace ArbitralSystem.Connectors.Test
             Assert.AreEqual(convertedDto.UnificatedPairName, GetUnificatedPairName(baseCurrency, quoteCurrency));
         }
 
+        private class TestMarketInfo : IMarketInfo
+        {
+            public decimal FreeRate { get; set; }
+            public string PricingName { get; set; }
+            public string TradingName { get; set; }
+            public string Name { get; set; }
+            public decimal MinAmount { get; set; }
+            public int TradingPrecision { get; set; }
+            public decimal MakerFee { get; set; }
+            public int PricingPrecision { get; set; }
+        }
+        
         [DataTestMethod]
         [DataRow("ETHBTC", "ETH", "BTC")]
         [DataRow("ETHBTC", "eth", "btc")]
@@ -80,14 +92,14 @@ namespace ArbitralSystem.Connectors.Test
         [DataRow(null, null, "")]
         public void CoinExSymbolConverter(string pair, string baseCurrency, string quoteCurrency)
         {
-            var rawSymbol = new MarketInfo
+            var rawSymbol = new TestMarketInfo
             {
                 Name = pair,
                 TradingName = baseCurrency,
                 PricingName = quoteCurrency
             };
 
-            var convertedDto = _dtoConverter.Convert<MarketInfo, PairInfo>(rawSymbol);
+            var convertedDto = _dtoConverter.Convert<IMarketInfo, PairInfo>(rawSymbol);
 
             Assert.AreEqual(convertedDto.Exchange, Exchange.CoinEx);
             Assert.AreEqual(convertedDto.BaseCurrency, baseCurrency);

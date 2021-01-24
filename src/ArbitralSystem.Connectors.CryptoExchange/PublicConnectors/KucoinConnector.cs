@@ -13,12 +13,12 @@ using Kucoin.Net.Objects;
 
 namespace ArbitralSystem.Connectors.CryptoExchange.PublicConnectors
 {
-    internal class KucoinPublicConnector : BasePublicConnector, IPublicConnector
+    internal class KucoinConnector : BaseConnector, IPublicConnector
     {
         private readonly IDtoConverter _converter;
         private readonly IKucoinClient _kucoinClient;
 
-        public KucoinPublicConnector([NotNull] IDtoConverter converter,
+        public KucoinConnector([NotNull] IDtoConverter converter,
             IKucoinClient kucoinClient = null)
         {
             if (kucoinClient == null)

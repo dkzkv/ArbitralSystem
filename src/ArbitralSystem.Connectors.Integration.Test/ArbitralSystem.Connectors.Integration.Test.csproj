@@ -18,4 +18,10 @@
     <ProjectReference Include="..\ArbitralSystem.Test\ArbitralSystem.Test.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Bitmex.Net.Client, Version=1.4.3.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>bin\Debug\netcoreapp3.1\Bitmex.Net.Client.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

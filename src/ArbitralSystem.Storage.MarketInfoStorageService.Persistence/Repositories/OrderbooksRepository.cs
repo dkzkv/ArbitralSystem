@@ -59,13 +59,13 @@ namespace ArbitralSystem.Storage.MarketInfoStorageService.Persistence.Repositori
                 var askTask = Task.Run(() =>
                 {
                     foreach (var ask in orderBook.Asks)
-                        orderBookEntries.Add(FillOrderbookPriceEntry(orderBook, ask, Direction.Sell));
+                        orderBookEntries.Add(FillOrderbookPriceEntry(orderBook, ask, OrderSide.Sell));
                 });
 
                 var bidTask = Task.Run(() =>
                 {
                     foreach (var bid in orderBook.Bids)
-                        orderBookEntries.Add(FillOrderbookPriceEntry(orderBook, bid, Direction.Buy));
+                        orderBookEntries.Add(FillOrderbookPriceEntry(orderBook, bid, OrderSide.Buy));
                 });
                 await Task.WhenAll(askTask, bidTask);
             }
@@ -73,13 +73,13 @@ namespace ArbitralSystem.Storage.MarketInfoStorageService.Persistence.Repositori
             return orderBookEntries;
         }
 
-        private OrderbookPriceEntry FillOrderbookPriceEntry(OrderBook orderBook, OrderbookEntry entry, Direction direction)
+        private OrderbookPriceEntry FillOrderbookPriceEntry(OrderBook orderBook, OrderbookEntry entry, OrderSide orderSide)
         {
             return new OrderbookPriceEntry
             {
                 UtcCatchAt = orderBook.CatchAt.UtcDateTime,
                 Exchange = orderBook.Exchange,
-                Direction = direction,
+                OrderSide = orderSide,
                 Price = entry.Price,
                 Quantity = entry.Quantity,
                 Symbol = orderBook.Symbol

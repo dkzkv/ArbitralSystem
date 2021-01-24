@@ -38,6 +38,8 @@ namespace ArbitralSystem.Connectors.Integration.Test.SingleOrderBookDistributer
         [DataRow(Exchange.Kraken,10)]
         [DataRow(Exchange.Kucoin,10)]
         [DataRow(Exchange.CoinEx,10)]
+        [DataRow(Exchange.Bitmex,10)]
+        [DataRow(Exchange.Bitfinex,10)]
         public async Task AllExchangesDistributerTest(Exchange exchange ,int countOfPairs)
         {
             var publicConnector = _connectorFactory.GetInstance(exchange);
@@ -93,17 +95,7 @@ namespace ArbitralSystem.Connectors.Integration.Test.SingleOrderBookDistributer
 
         private IPublicConnectorFactory CreateConnectorFactory()
         {
-            var connectionInfo = new ExchangeConnectionInfo
-            {
-                Exchange = Exchange.CoinEx,
-                BaseRestUrl = "https://api.coinex.com/"
-            };
-
-            IExchangeConnectionInfo[] connections = {connectionInfo};
-
-            var coinExConnector = new CoinExConnector(connections, new EmptyLogger());
-
-            return new CryptoExPublicConnectorFactory(coinExConnector, DtoConverter, new EmptyLogger());
+            return new CryptoExPublicConnectorFactory( DtoConverter, Logger);
         }
         
     }

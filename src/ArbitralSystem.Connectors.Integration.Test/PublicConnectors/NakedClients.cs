@@ -1,10 +1,19 @@
-
+using System.Linq;
+using System.Threading;
 using Binance.Net;
 using Binance.Net.Interfaces;
+using Bitfinex.Net;
+using Bitfinex.Net.Interfaces;
+using Bitfinex.Net.Objects;
+using Bitmex.Net.Client;
+using Bitmex.Net.Client.Interfaces;
+using Bitmex.Net.Client.Objects.Requests;
 using Bittrex.Net;
 using Bittrex.Net.Interfaces;
 using CoinEx.Net;
 using CoinEx.Net.Interfaces;
+using HitBTC.Net;
+using HitBTC.Net.Interfaces;
 using Huobi.Net;
 using Huobi.Net.Interfaces;
 using Kraken.Net;
@@ -24,6 +33,9 @@ namespace ArbitralSystem.Connectors.Integration.PublicConnectors.Test
         private IHuobiClient _huobiClient;
         private IKrakenClient _krakenClient;
         private IKucoinClient _kucoinClient;
+        private IBitmexClient _bitmexClient;
+        private IBitfinexClient _bitfinexClient;
+
 
         [TestInitialize]
         public void Init()
@@ -34,17 +46,16 @@ namespace ArbitralSystem.Connectors.Integration.PublicConnectors.Test
             _huobiClient = new HuobiClient();
             _krakenClient = new KrakenClient();
             _kucoinClient = new KucoinClient();
+            _bitmexClient = new BitmexClient();
+            _bitfinexClient = new BitfinexClient();
+
         }
 
         [TestMethod]
         public void TestClients()
         {
-            _binanceClient.SetApiCredentials();
-            _bittrexClient.SetApiCredentials();
-            _coinExClient.SetApiCredentials();
-            _huobiClient.SetApiCredentials();
-            _krakenClient.SetApiCredentials();
-            _kucoinClient.CreateAccount()
+            var symbols = _bitfinexClient.GetSymbols();
+            var symbolsDetails = _bitfinexClient.GetSymbolDetails();
         }
     }
 }

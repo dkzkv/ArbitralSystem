@@ -68,7 +68,7 @@ namespace ArbitralSystem.Connectors.Integration.Test.SingleOrderBookDistributer
         {
             var options = new DistributerOptions {Frequency = 100};
 
-            IPublicConnector publicConnector = new KrakenPublicConnector(DtoConverter);
+            IPublicConnector publicConnector = new KrakenConnector(DtoConverter);
             var pairs = await publicConnector.GetPairsInfo();
 
             Assert.IsTrue(pairs.Any());

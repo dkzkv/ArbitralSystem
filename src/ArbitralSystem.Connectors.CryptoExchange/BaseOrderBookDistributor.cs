@@ -28,7 +28,7 @@ namespace ArbitralSystem.Connectors.CryptoExchange
 
         private OrderBookDistributerInstance<TExchange> _orderBookDistributerInstance;
 
-        private const int DefaultInterval = 1000;
+        private const int DefaultInterval = 10000;
         
         protected BaseOrderBookDistributer([NotNull] IDistributerOptions distributerOptions,
             [NotNull] IConverter converter,
@@ -96,16 +96,7 @@ namespace ArbitralSystem.Connectors.CryptoExchange
         
         private void OrderBookOnOnOrderBookUpdate((IEnumerable<ISymbolOrderBookEntry> Bids, IEnumerable<ISymbolOrderBookEntry> Asks) obj)
         {
-            var orderBook = new OrderBook()
-            {
-                Symbol = _orderBookDistributerInstance.InstanceSymbol,
-                CatchAt = DateTimeOffset.Now,
-                Bids = _converter.Convert<IEnumerable<ISymbolOrderBookEntry>, IEnumerable<IOrderbookEntry>>(obj.Bids),
-                Asks = _converter.Convert<IEnumerable<ISymbolOrderBookEntry>, IEnumerable<IOrderbookEntry>>(obj.Asks),
-                BestBid = _converter.Convert<ISymbolOrderBookEntry, IOrderbookEntry>(obj.Bids.FirstOrDefault()),
-                BestAsk = _converter.Convert<ISymbolOrderBookEntry, IOrderbookEntry>(obj.Asks.FirstOrDefault()),
-                Exchange = Exchange,
-            };
+            var orderBook = FillOrderBook(_orderBookDistributerInstance);
             OnOrderBook(orderBook);
         }
 
@@ -173,14 +164,14 @@ namespace ArbitralSystem.Connectors.CryptoExchange
         private void SubscribeEvents(TExchange orderBook)
         {
             orderBook.OnStatusChange += OrderBook_OnStatusChange;
-            if(_distributerOptions.Frequency != null)
+            if(!_distributerOptions.Frequency.HasValue)
                 orderBook.OnOrderBookUpdate += OrderBookOnOnOrderBookUpdate;
         }
         
         private void UnSubscribeEvents(TExchange orderBook)
         {
             orderBook.OnStatusChange -= OrderBook_OnStatusChange;
-            if(_distributerOptions.Frequency != null)
+            if(!_distributerOptions.Frequency.HasValue)
                 orderBook.OnOrderBookUpdate -= OrderBookOnOnOrderBookUpdate;
         }
         

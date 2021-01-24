@@ -17,27 +17,52 @@ namespace ArbitralSystem.Connectors.Core
 {
     public abstract class BaseRestClient
     {
-        protected RestClient Client { get; set; }
-        protected IConnectionInfo ConnectionInfo { get;  set; }
-        protected  RestClient BuildRestClient(string baseUrl)
+        private const int DefaultRequestTimeOutInMs = 10000;
+
+        private readonly RestClient _client;
+        private readonly ConnectionOptions _connectionOptions;
+
+        public BaseRestClient(string baseUrl)
+        {
+            _client = BuildRestClient(baseUrl);
+            _connectionOptions = new ConnectionOptions(DefaultRequestTimeOutInMs);
+        }
+
+        public BaseRestClient(string baseUrl, ConnectionOptions connectionOptions)
+        {
+            _client = BuildRestClient(baseUrl);
+            _connectionOptions = connectionOptions;
+        }
+
+        private RestClient BuildRestClient(string baseUrl)
         {
             var client = new RestClient(baseUrl);
             client.AddDefaultHeader("Accept", "application/json");
             return client;
         }
+
         protected virtual IResponse<TResponse> DeserializeResponse<TResponse>(
             [NotNull] IResponse<IRestResponse> response)
         {
-            var validationResult = ValidateResponse<TResponse>(response);
+            return InnerDeserializeResponse(response, () => JsonConvert.DeserializeObject<TResponse>(response.Data.Content));
+        }
 
-            if (!validationResult.IsSuccess)
-                return validationResult;
+        protected virtual IResponse<TOut> DeserializeResponse<TIn, TOut>(
+            [NotNull] IResponse<IRestResponse> response) where TIn : TOut
+        {
+            return InnerDeserializeResponse(response, () => (TOut) JsonConvert.DeserializeObject<TIn>(response.Data.Content));
+        }
+
+        private IResponse<TResponse> InnerDeserializeResponse<TResponse>(
+            [NotNull] IResponse<IRestResponse> response , Func<TResponse>  deserializer)
+        {
+            if (!IsResponseValid<TResponse>(response, out var errorResponse))
+                return errorResponse;
 
             var restResponse = response.Data;
-
             try
             {
-                var data = JsonConvert.DeserializeObject<TResponse>(restResponse.Content);
+                var data = deserializer.Invoke();
                 return new Response<TResponse>(data);
             }
             catch (Exception ex)
@@ -47,43 +72,28 @@ namespace ArbitralSystem.Connectors.Core
                 return new Response<TResponse>(exception);
             }
         }
-        
+
         protected virtual IResponse<TOut> DeserializeResponse<TIn, TOut>(
-            [NotNull] IResponse<IRestResponse> response) where TIn: TOut
+            [NotNull] IResponse<IRestResponse> response, [NotNull] string jObject) where TIn : TOut
         {
-            var validationResult = ValidateResponse<TOut>(response);
-
-            if (!validationResult.IsSuccess)
-                return validationResult;
-
-            var restResponse = response.Data;
-
-            try
-            {
-                var data = (TOut)JsonConvert.DeserializeObject<TIn>(restResponse.Content);
-                return new Response<TOut>(data);
-            }
-            catch (Exception ex)
-            {
-                var exception =
-                    new RestClientException($"Error while parsing response , Content : {restResponse.Content}", ex);
-                return new Response<TOut>(exception);
-            }
+            return InnerDeserializeResponse(response, jObject, (innerJMessage) => (TOut) innerJMessage[jObject].ToObject<TIn>());
         }
-        
 
         protected virtual IResponse<TResponse> DeserializeResponse<TResponse>(
             [NotNull] IResponse<IRestResponse> response, [NotNull] string jObject)
         {
-            var validationResult = ValidateResponse<TResponse>(response);
+            return InnerDeserializeResponse(response, jObject, (innerJMessage) => innerJMessage[jObject].ToObject<TResponse>());
+        }
 
-            if (!validationResult.IsSuccess)
-                return validationResult;
-
+        private IResponse<TResponse> InnerDeserializeResponse<TResponse>(
+            [NotNull] IResponse<IRestResponse> response, [NotNull] string jObject, Func<JObject, TResponse> deserializer)
+        {
+            if (!IsResponseValid<TResponse>(response, out var errorResponse))
+                return errorResponse;
+            
             var restResponse = response.Data;
 
             var jMessage = JObject.Parse(restResponse.Content);
-
             if (!jMessage.ContainsKey(jObject))
             {
                 var message = $"Result key {jObject} not found and error key missed";
@@ -93,7 +103,7 @@ namespace ArbitralSystem.Connectors.Core
 
             try
             {
-                var objectMessage = jMessage[jObject].ToObject<TResponse>();
+                var objectMessage = deserializer.Invoke(jMessage);
                 return new Response<TResponse>(objectMessage);
             }
             catch (Exception ex)
@@ -103,12 +113,14 @@ namespace ArbitralSystem.Connectors.Core
                 return new Response<TResponse>(exception);
             }
         }
-
-        private IResponse<TResponse> ValidateResponse<TResponse>([NotNull] IResponse<IRestResponse> response)
+        
+        private bool IsResponseValid<TResponse>([NotNull] IResponse<IRestResponse> response, out IResponse<TResponse> errorResponse)
         {
+            errorResponse = null;
             if (!response.IsSuccess)
             {
-                return new Response<TResponse>(response.Exception);
+                errorResponse = new Response<TResponse>(response.Exception);
+                return false;
             }
 
             var restResponse = response.Data;
@@ -118,26 +130,27 @@ namespace ArbitralSystem.Connectors.Core
                 {
                     var exception =
                         new RestClientException($"Response content is not valid. Uri: {restResponse.ResponseUri}");
-                    return new Response<TResponse>(exception);
+                    errorResponse = new Response<TResponse>(exception);
+                    return false;
                 }
 
-                return new Response<TResponse>();
+                return true;
             }
-
+            else
             {
                 var logMessage = $"response status: {restResponse.Content}.";
                 var exception = new UnexpectedRestClientException(logMessage, restResponse.ErrorException);
-                return new Response<TResponse>(exception);
+                errorResponse = new Response<TResponse>(exception);
+                return false;
             }
         }
 
-        protected async Task<IResponse<IRestResponse>> ExecuteRequestWithTimeOut(IRestRequest restRequest,
-            int milliseconds)
+        protected async Task<IResponse<IRestResponse>> ExecuteRequestWithTimeOut(IRestRequest restRequest, int milliseconds)
         {
             try
             {
                 var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(milliseconds));
-                var response = await Client.ExecuteTaskAsync(restRequest, cts.Token);
+                var response = await _client.ExecuteTaskAsync(restRequest, cts.Token);
                 return new Response<IRestResponse>(response);
             }
             catch (TaskCanceledException ex)
@@ -146,29 +159,10 @@ namespace ArbitralSystem.Connectors.Core
                 return new Response<IRestResponse>(exception);
             }
         }
-    }
 
-    public abstract class BaseApiRestClient : BaseRestClient
-    {
-        protected BaseApiRestClient([NotNull] IConnectionInfo connectionInfo)
+        protected async Task<IResponse<IRestResponse>> ExecuteRequestWithTimeOut(IRestRequest restRequest)
         {
-            ConnectionInfo = connectionInfo;
-            Client = BuildRestClient(connectionInfo.BaseRestUrl);
+            return await ExecuteRequestWithTimeOut(restRequest, _connectionOptions.DefaultTimeOutInMs);
         }
-    }
-    
-    public abstract class BaseExchangeRestClient : BaseRestClient
-    {
-        protected BaseExchangeRestClient([NotNull] IExchangeConnectionInfo[] exchangeConnectionInfo) 
-        {
-            var tempConnectionInfo = exchangeConnectionInfo.SingleOrDefault(o => o.Exchange == Exchange);
-
-            if (tempConnectionInfo == null || tempConnectionInfo.Exchange == Exchange.Undefined)
-                throw new RestClientException($"Connection info was not found or undefined");
-
-            ConnectionInfo = tempConnectionInfo;
-            Client = BuildRestClient(tempConnectionInfo.BaseRestUrl);
-        }
-        protected abstract Exchange Exchange { get; }
     }
 }

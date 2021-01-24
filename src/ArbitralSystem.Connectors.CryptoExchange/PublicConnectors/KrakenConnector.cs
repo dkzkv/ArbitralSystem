@@ -14,12 +14,12 @@ using Kraken.Net.Objects;
 
 namespace ArbitralSystem.Connectors.CryptoExchange.PublicConnectors
 {
-    internal class KrakenPublicConnector : BasePublicConnector , IPublicConnector
+    internal class KrakenConnector : BaseConnector , IPublicConnector
     {
         private readonly IDtoConverter _converter;
         private readonly IKrakenClient _krakenClient;
 
-        public KrakenPublicConnector([NotNull] IDtoConverter converter,
+        public KrakenConnector([NotNull] IDtoConverter converter,
             IKrakenClient krakenClient = null)
         {
             if (krakenClient == null)

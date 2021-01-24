@@ -45,7 +45,13 @@ namespace ArbitralSystem.Connectors.CryptoExchange
 
                 case Exchange.Kucoin:
                     return new KucoinOrderbookDistributor(_distributerOptions, _converter, _logger);
+                
+                case Exchange.Bitmex:
+                    return new BitmexOrderbookDistributor(_distributerOptions, _converter, _logger);
 
+                case Exchange.Bitfinex:
+                    return new BitfinexOrderbookDistributor(_distributerOptions, _converter, _logger);
+                
                 default:
                     throw new NotSupportedException(
                         $"Not supported {Enum.GetName(typeof(Exchange), exchange)} exchange for {nameof(CryptoExOrderBookDistributerFactory)}");

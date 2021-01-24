@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using ArbitralSystem.Common.Helpers;
 using ArbitralSystem.Connectors.CoinEx.Models;
 using ArbitralSystem.Connectors.Core.Converters;
 using ArbitralSystem.Connectors.Core.Models;
@@ -7,8 +6,9 @@ using ArbitralSystem.Connectors.CryptoExchange.Models;
 using ArbitralSystem.Domain.Distributers;
 using ArbitralSystem.Domain.MarketInfo;
 using AutoMapper;
-using Binance.Net.Objects;
 using Binance.Net.Objects.Spot.MarketData;
+using Bitfinex.Net.Objects;
+using Bitmex.Net.Client.Objects;
 using Bittrex.Net.Objects;
 using CoinEx.Net.Objects;
 using CryptoExchange.Net.Interfaces;
@@ -47,19 +47,21 @@ namespace ArbitralSystem.Connectors.CryptoExchange.Converter
                     .ForMember(destination => destination.CatchAt, o => o.MapFrom(source => source.LastOrderBookUpdate.ToUniversalTime())); // LastOrderBookUpdate is utc date
                     //.AfterMap((src, dest) => dest.TimeStamp = TimeHelper.DateTimeToTimeStamp(dest.DateTime));
 
-                //Binance Symbol CryptoExchangeLibrary
+                #region Binance
                 cfg.CreateMap<BinanceSymbol, PairInfo>()
                     .ForMember(destination => destination.ExchangePairName, o => o.MapFrom(source => source.Name))
                     .ForMember(destination => destination.BaseCurrency, o => o.MapFrom(source => source.BaseAsset))
                     .ForMember(destination => destination.QuoteCurrency, o => o.MapFrom(source => source.QuoteAsset))
                     .AfterMap((src, dest) => dest.Exchange = Exchange.Binance);
                 
+                
                 cfg.CreateMap<BinancePrice, PairPrice>()
                     .ForMember(destination => destination.ExchangePairName, o => o.MapFrom(source => source.Symbol))
                     .ForMember(destination => destination.Price, o => o.MapFrom(source => source.Price))
                     .AfterMap((src, dest) => dest.Exchange = Exchange.Binance);
+                #endregion
 
-                //Bittrex Symbol CryptoExchangeLibrary
+                #region Bittrex
                 cfg.CreateMap<BittrexSymbol, PairInfo>()
                     .ForMember(destination => destination.ExchangePairName, o => o.MapFrom(source => source.Symbol))
                     .AfterMap((src, dest) => dest.Exchange = Exchange.Bittrex);
@@ -68,8 +70,9 @@ namespace ArbitralSystem.Connectors.CryptoExchange.Converter
                     .ForMember(destination => destination.ExchangePairName, o => o.MapFrom(source => source.Symbol))
                     .ForMember(destination => destination.Price, o => o.MapFrom(source => source.Ask))
                     .AfterMap((src, dest) => dest.Exchange = Exchange.Bittrex);
+                #endregion
 
-                //Huobi Symbol CryptoExchangeLibrary
+                #region Huobi
                 cfg.CreateMap<HuobiSymbol, PairInfo>()
                     .ForMember(destination => destination.ExchangePairName, o => o.MapFrom(source => source.Symbol))
                     .AfterMap((src, dest) => dest.Exchange = Exchange.Huobi);
@@ -78,8 +81,9 @@ namespace ArbitralSystem.Connectors.CryptoExchange.Converter
                     .ForMember(destination => destination.ExchangePairName, o => o.MapFrom(source => source.Symbol))
                     .ForMember(destination => destination.Price, o => o.MapFrom(source => source.Ask))
                     .AfterMap((src, dest) => dest.Exchange = Exchange.Huobi);
+                #endregion
 
-                //Kraken Symbol CryptoExchangeLibrary
+                #region Kraken
                 cfg.CreateMap<KrakenSymbol, PairInfo>()
                     .ForMember(destination => destination.BaseCurrency, o => o.MapFrom(source => source.BaseAsset))
                     .ForMember(destination => destination.QuoteCurrency, o => o.MapFrom(source => source.QuoteAsset))
@@ -91,8 +95,9 @@ namespace ArbitralSystem.Connectors.CryptoExchange.Converter
                     .ForMember(destination => destination.ExchangePairName, o => o.MapFrom(source => source.Key))
                     .ForMember(destination => destination.Price, o => o.MapFrom(source => source.Value.BestAsks.Price))
                     .AfterMap((src, dest) => dest.Exchange = Exchange.Kraken);
-
-                //Kucoin Symbol CryptoExchangeLibrary
+                #endregion
+                
+                #region Kucoin
                 cfg.CreateMap<KucoinSymbol, PairInfo>()
                     .ForMember(destination => destination.ExchangePairName, o => o.MapFrom(source => source.Symbol))
                     .AfterMap((src, dest) => dest.Exchange = Exchange.Kucoin);
@@ -101,9 +106,10 @@ namespace ArbitralSystem.Connectors.CryptoExchange.Converter
                     .ForMember(destination => destination.ExchangePairName, o => o.MapFrom(source => source.Symbol))
                     .ForMember(destination => destination.Price, o => o.MapFrom(source => source.BestAsk))
                     .AfterMap((src, dest) => dest.Exchange = Exchange.Kucoin);
+                #endregion
 
-                //CoinEx
-                cfg.CreateMap<MarketInfo, PairInfo>()
+                #region CoinEx
+                cfg.CreateMap<IMarketInfo, PairInfo>()
                     .ForMember(destination => destination.ExchangePairName, o => o.MapFrom(source => source.Name))
                     .ForMember(destination => destination.BaseCurrency, o => o.MapFrom(source => source.TradingName))
                     .ForMember(destination => destination.QuoteCurrency, o => o.MapFrom(source => source.PricingName))
@@ -113,6 +119,28 @@ namespace ArbitralSystem.Connectors.CryptoExchange.Converter
                     .ForMember(destination => destination.ExchangePairName, o => o.MapFrom(source => source.Key))
                     .ForMember(destination => destination.Price, o => o.MapFrom(source => source.Value.BestBuyPrice))
                     .AfterMap((src, dest) => dest.Exchange = Exchange.CoinEx);
+                #endregion
+
+                #region Bitmex
+                cfg.CreateMap<Instrument, PairInfo>()
+                    .ForMember(destination => destination.ExchangePairName, o => o.MapFrom(source => source.Symbol))
+                    .ForMember(destination => destination.BaseCurrency, o => o.MapFrom(source => source.RootSymbol))
+                    .ForMember(destination => destination.QuoteCurrency, o => o.MapFrom(source => source.QuoteCurrency))
+                    .AfterMap((src, dest) => dest.Exchange = Exchange.Bitmex);
+                
+                cfg.CreateMap<Instrument, PairPrice>()
+                    .ForMember(destination => destination.ExchangePairName, o => o.MapFrom(source => source.Symbol))
+                    .ForMember(destination => destination.Price, o => o.MapFrom(source => source.AskPrice))
+                    .AfterMap((src, dest) => dest.Exchange = Exchange.Bitmex);
+                #endregion
+
+                #region Bifinex
+                cfg.CreateMap<BitfinexSymbolOverview, IPairPrice>().As<PairPrice>();
+                cfg.CreateMap<BitfinexSymbolOverview, PairPrice>()
+                    .ForMember(destination => destination.ExchangePairName, o => o.MapFrom(source => source.Symbol))
+                    .ForMember(destination => destination.Price, o => o.MapFrom(source => source.Ask))
+                    .AfterMap((src, dest) => dest.Exchange = Exchange.Bitfinex);
+                #endregion
             });
         }
     }

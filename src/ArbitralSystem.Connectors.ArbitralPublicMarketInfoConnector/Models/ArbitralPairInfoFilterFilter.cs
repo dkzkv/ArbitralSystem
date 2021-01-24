@@ -1,6 +1,6 @@
 using ArbitralSystem.Domain.MarketInfo;
 
-namespace ArbitralSystem.Connectors.Core.Arbitral
+namespace ArbitralSystem.Connectors.ArbitralPublicMarketInfoConnector.Models
 {
     public class ArbitralPairInfoFilterFilter
     {

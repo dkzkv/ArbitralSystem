@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace ArbitralSystem.Connectors.CoinEx.Models
+namespace ArbitralSystem.Connectors.CoinEx.Models.Auxiliary
 {
-    public class MarketInfo
+    internal class MarketInfo : IMarketInfo
     {
         [JsonProperty(PropertyName = "taker_fee_rate")]
         public decimal FreeRate { get; set; }
@@ -16,7 +16,8 @@ namespace ArbitralSystem.Connectors.CoinEx.Models
         [JsonProperty(PropertyName = "min_amount")]
         public decimal MinAmount { get; set; }
 
-        [JsonProperty(PropertyName = "name")] public string Name { get; set; }
+        [JsonProperty(PropertyName = "name")] 
+        public string Name { get; set; }
 
         [JsonProperty(PropertyName = "trading_decimal")]
         public int TradingPrecision { get; set; }
