@@ -12,10 +12,10 @@ namespace ArbitralSystem.Connectors.CryptoExchange.PrivateConnectors
     {
         private readonly IKrakenClient _krakenClient;
         
-        public async Task PlaceOrderAsync(IOrder order, CancellationToken token)
+        public async Task PlaceOrderAsync(IPlaceOrder placeOrder, CancellationToken token)
         {
             WebCallResult<KrakenPlacedOrder> result =
-                await _krakenClient.PlaceOrderAsync(order.Symbol, OrderSide.Buy, OrderType.Market, order.Quantity.Value, ct: token);
+                await _krakenClient.PlaceOrderAsync(placeOrder.Symbol, OrderSide.Buy, OrderType.Market, placeOrder.Quantity.Value, ct: token);
         }
 
         public async Task CancelOrderAsync(string symbol, string orderId, CancellationToken token)

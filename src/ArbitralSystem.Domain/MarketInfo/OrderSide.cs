@@ -6,6 +6,11 @@
         Sell = 1
     }
 
+    public enum OrderStatus
+    {
+        
+    }
+
     public enum OrderType
     {
         /// <summary>

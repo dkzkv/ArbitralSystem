@@ -12,9 +12,9 @@ namespace ArbitralSystem.Connectors.CryptoExchange.PrivateConnectors
     {
         private readonly IKucoinClient _kucoinClient;
         
-        public async Task PlaceOrderAsync(IOrder order, CancellationToken token)
+        public async Task PlaceOrderAsync(IPlaceOrder placeOrder, CancellationToken token)
         {
-            WebCallResult<KucoinNewOrder> orderResult = await _kucoinClient.PlaceOrderAsync(order.Symbol, KucoinOrderSide.Buy, KucoinNewOrderType.Market, order.Price, ct: token );
+            WebCallResult<KucoinNewOrder> orderResult = await _kucoinClient.PlaceOrderAsync(placeOrder.Symbol, KucoinOrderSide.Buy, KucoinNewOrderType.Market, placeOrder.Price, ct: token );
         }
 
         public async Task CancelOrderAsync(string symbol, string orderId, CancellationToken token)

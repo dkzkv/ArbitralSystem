@@ -1,5 +1,7 @@
+using System;
 using ArbitralSystem.Connectors.Core.Common;
 using ArbitralSystem.Connectors.Core.Exceptions;
+using ArbitralSystem.Domain.MarketInfo;
 using CryptoExchange.Net.Objects;
 
 namespace ArbitralSystem.Connectors.CryptoExchange.PublicConnectors
@@ -24,4 +26,16 @@ namespace ArbitralSystem.Connectors.CryptoExchange.PublicConnectors
                 throw new RestClientException(result.Error?.Message);
         }
     }
+    
+    public abstract class ExchangeBaseConnector : BaseConnector , IExchange
+    {
+        public abstract Exchange Exchange { get; }
+
+        public void ValidateExchangeArgument(IExchange exchangeArg)
+        {
+            if(exchangeArg.Exchange != Exchange)
+                throw new ArgumentException($"Exchange argument: {exchangeArg.Exchange} not belongs to target exchange connector: {Exchange}");
+        }
+    }
+    
 }

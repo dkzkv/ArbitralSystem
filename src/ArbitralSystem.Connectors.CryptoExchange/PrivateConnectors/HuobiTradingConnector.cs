@@ -14,10 +14,10 @@ namespace ArbitralSystem.Connectors.CryptoExchange.PrivateConnectors
     {
         private readonly IHuobiClient _huobiClient;
 
-        public async Task PlaceOrderAsync(IOrder order, CancellationToken ct)
+        public async Task PlaceOrderAsync(IPlaceOrder placeOrder, CancellationToken ct)
         {
             long accountId = 1;
-            WebCallResult<long> placedOrder = await _huobiClient.PlaceOrderAsync(accountId, order.Symbol, HuobiOrderType.MarketBuy, order.Quantity.Value, ct: ct);
+            WebCallResult<long> placedOrder = await _huobiClient.PlaceOrderAsync(accountId, placeOrder.Symbol, HuobiOrderType.MarketBuy, placeOrder.Quantity.Value, ct: ct);
         }
 
         public async Task CancelOrderAsync(string symbol, string orderId, CancellationToken token)
