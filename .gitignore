@@ -272,3 +272,4 @@ src/RSPK.Apgm.Migrator/Logs/Logs.txt
 
 # Data analysis projects ignore list
 .Rproj.user
+.Rhistory
