@@ -421,6 +421,8 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
       ## Join all together
       
       data <- orderbooks_dt %>% 
+        ## filter exchanges with revert in base/trading currency
+        filter(exchange != 2) %>% 
         ##
         mutate(
           timestamp_round = to_timestamp(timestamp)
@@ -451,7 +453,6 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
         count(symbol, date, exchange) %>% 
         spread(exchange, n)
       
-      #data %>% skim
       
       print(
         sprintf("[WARN] Missed values for %s seconds", 
@@ -459,17 +460,24 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
       )
       
       data %>% 
-        sample_frac(.01) %>% 
+        sample_frac(.25) %>% 
         mutate(
           bot_status = if_else(status == job$config$connected_bot_status, "Connected", "Not connected", "Unknown"),
           direction_name = if_else(direction == 0, "Bid", "Ask", "Invalid")
         ) %>% 
         
         ggplot(aes(x = timestamp, y = price, color = exchange)) +
-        geom_line() +
+          geom_point(alpha = .25, size = .15) +
         
-        scale_x_datetime(date_breaks = "12 hours", date_labels = "%H:%M %b %d") +
-        facet_grid(direction_name ~ bot_status)
+          scale_x_datetime(date_breaks = "4 hours", date_labels = "%H:%M %b %d") +
+          facet_grid(direction_name ~ bot_status)
+      
+      ggsave(
+        filename = sprintf("orders.%s.%s.png", str_replace(.settings$symbol, "/", "-"), Sys.Date()), path = "output",
+        plot = last_plot(),
+        width = 1920/320, height = 1280/320, 
+        units = "in", dpi = 320
+      )
       
       #
       data %<>% filter(status == job$config$connected_bot_status)
@@ -586,15 +594,26 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
       
       print(
         arbitrage_cases_dt %>% 
-          sample_n(10) %>% 
           filter(target) %>% 
+          sample_n(10) %>% 
           select(timestamp_round, symbol, exchange, direction, price, volume, best_bid, best_ask, market_volume, usdt_delta_refined) %>% 
-          arrange(timestamp_round)
+          arrange(timestamp_round) %>% 
+          as_tibble
       )
       
-      ggplot(arbitrage_cases_dt %>% filter(target), aes(x = exchange, y = usdt_delta_refined, color = exchange)) +
-        geom_violin() +
-        scale_y_log10()
+      arbitrage_cases_dt %>%
+        filter(target) %>% 
+        
+        ggplot(aes(x = exchange, y = usdt_delta_refined, color = exchange)) +
+          geom_violin() +
+          scale_y_log10()
+      
+      ggsave(
+        filename = sprintf("arbitrage-distibution.%s.%s.png", str_replace(.settings$symbol, "/", "-"), Sys.Date()), path = "output",
+        plot = last_plot(),
+        width = 1920/320, height = 1280/320, 
+        units = "in", dpi = 320
+      )
       
       
       ## Calc and return final stats
