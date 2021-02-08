@@ -1,6 +1,6 @@
 default:
   depth_in_minutes: 720
-  exchange_fee_pcnt: 0.001
+  exchange_fee_pcnt: 0.03
   min_exchange_n: 2
   stable_coin_symbol: 'USDT'
   risks:

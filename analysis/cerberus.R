@@ -235,11 +235,14 @@ get_bot_statuses <- function(.settings) {
 #'
 #' @param .settings 
 #'
-get_1D_candles  <- function(.settings) {
+get_1D_candles <- function(.settings) {
   
   tic("Executing get_symbol_price_sp...")
   dt <- exec_proc(public_market_data_db_con, "get_symbol_price_sp", .settings)
   toc()
+  
+  if (nrow(dt) == 0)
+    stop(sprintf("Prices not found for %s", .settings$symbols))
   
   dt %>% 
     ##
@@ -406,7 +409,7 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
       trading_pair_candles_dt$min_close <- sapply(trading_pair_candles_dt$date, get_min_close_price)
       
       trading_pair_candles_dt %<>% 
-        mutate(close = if_else(is.na(close), min_close, close)) %>% 
+        mutate(close = if_else(is.na(close), min_close, close, NA_real_)) %>% 
         select(-min_close)
       
       
