@@ -17,14 +17,11 @@ suppressPackageStartupMessages({
   library(purrr)
   library(data.table)
   
-  library(odbc)
-  
   library(stringr)
   library(lubridate)
   
   library(skimr)
-  library(tictoc)
-  
+
   library(ggplot2)
 })
 
@@ -146,13 +143,28 @@ get_settings <- function(dt) {
 #' @param .settings 
 #'
 exec_proc <- function(.con, .proc_name, .settings) {
+  require(odbc)
+  require(tictoc)
+  
   stopifnot(
     is.character(.proc_name),
     is.list(.settings) && length(.settings) == 3
   )
   
-  dbGetQuery(.con, 
-             sprintf("exec %s @symbol = '%s', @fromTime = '%s', @toTime = '%s'", .proc_name, .settings$symbol, .settings$from_time, .settings$to_time))
+  tic(sprintf("[TRACE] Executing %s...", .proc_name))
+  
+  dt <- tryCatch({
+    dbGetQuery(.con,
+               sprintf("exec %s @symbol = '%s', @fromTime = '%s', @toTime = '%s'", .proc_name, .settings$symbol, .settings$from_time, .settings$to_time))
+  }, warning = function(w) {
+    warning(w)
+  }, error = function(e) {
+    stop(e)
+  }, finally = {
+    toc()
+  })
+  
+  return(dt)
 }
 
 
@@ -162,12 +174,7 @@ exec_proc <- function(.con, .proc_name, .settings) {
 #' @param .settings 
 #'
 get_orderbooks <- function(.settings) {
-  
-  tic("Executing get_orderbook_sp...")
-  dt <- exec_proc(market_info_db_con, "get_orderbook_sp", .settings)
-  toc()
-  
-  dt %>% 
+  exec_proc(market_info_db_con, "get_orderbook_sp", .settings) %>% 
     normalize_col_names
 }
 
@@ -175,17 +182,13 @@ get_orderbooks <- function(.settings) {
 #' Get bot statuses
 #'
 #' @param .settings 
+#' @param .exchanges_list 
 #'
-get_bot_statuses <- function(.settings) {
+get_bot_statuses <- function(.settings, .exchanges_list) {
   
   .settings$from_time <- .settings$from_time - months(1) #! HACK
   
-  tic("Executing get_bot_statuses_history_sp...")
-  dt <- exec_proc(market_info_db_con, "get_bot_statuses_history_sp", .settings)
-  toc()
-  
-  
-  dt %<>% 
+  dt <- exec_proc(market_info_db_con, "get_bot_statuses_history_sp", .settings) %>% 
     normalize_col_names %>% 
     #
     mutate(timestamp = to_timestamp(timestamp)) %>% 
@@ -200,11 +203,11 @@ get_bot_statuses <- function(.settings) {
   if (nrow(dt) == 0) {
     print("[WARN] Records not found")
     
-    exchanges_n <- 6L
+    exchanges_n <- length(.exchanges_list)
     
     dt %<>%
       rbind(tibble(
-        exchange = 1:exchanges_n,
+        exchange = .exchanges_list,
         symbol = rep(.settings$symbol, exchanges_n),
         status = rep(4L, exchanges_n),
         timestamp = rep(.settings$from_time, exchanges_n)
@@ -237,12 +240,10 @@ get_bot_statuses <- function(.settings) {
 #'
 get_1D_candles <- function(.settings) {
   
-  tic("Executing get_symbol_price_sp...")
   dt <- exec_proc(public_market_data_db_con, "get_symbol_price_sp", .settings)
-  toc()
-  
+
   if (nrow(dt) == 0)
-    stop(sprintf("Prices not found for %s", .settings$symbols))
+    stop(sprintf("[ERROR] Prices not found for %s", .settings$symbols))
   
   dt %>% 
     ##
@@ -269,11 +270,6 @@ get_1D_candles <- function(.settings) {
 
 # Finance functions ----
 
-#' Exchange list codes
-exchange_list <- c(1:6)
-names(exchange_list) <- c("Binance", "Bittrex", "CoinEx", "Huobi", "Kraken", "Kucoin")
-
-
 #' Calculate candle
 #'
 #' @param dt 
@@ -281,6 +277,7 @@ names(exchange_list) <- c("Binance", "Bittrex", "CoinEx", "Huobi", "Kraken", "Ku
 calc_candle <- function(dt) {
   require(tidyr)
   require(dplyr)
+  
   stopifnot(is.grouped_df(dt))
   
   dt %>% 
@@ -332,12 +329,19 @@ not_usdt_indx <- jobs_settings %>%
   map_lgl(~ str_ends(.x$symbol, job$config$stable_coin_symbol, negate = T)) %>% 
   which
 
+
 arbitrage_stats <- jobs_settings[not_usdt_indx] %>% 
   map_dfr(
     function(.settings) {
       
       ## Start
-      print(sprintf("Starting %s...", .settings$symbol))
+      print(sprintf("[INFO] %s | Start processing...", .settings$symbol))
+      
+      
+      ## Set lists
+      #' Exchange list codes
+      exchanges_list <- c(1:6)
+      names(exchanges_list) <- c("Binance", "Bittrex", "CoinEx", "Huobi", "Kraken", "Kucoin")
       
       
       ## Get orderbook
@@ -362,7 +366,7 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
       
       
       ## Get bot statuses
-      bot_statuses_dt <- get_bot_statuses(.settings)
+      bot_statuses_dt <- get_bot_statuses(.settings, exchanges_list)
       
       bot_statuses_dt %<>% 
         filter(!is.na(status)) %>% 
@@ -380,8 +384,7 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
       
       ## Get symbol to stable coin rate 
       usdt_settings <- .settings
-      # TODO: get unified pair name
-      usdt_settings$symbol <- sprintf("%s%s", str_split(.settings$symbol, "/")[[1]][2], job$config$stable_coin_symbol)
+      usdt_settings$symbol <- sprintf("%s%s", str_split(.settings$symbol, "/")[[1]][2], job$config$stable_coin_symbol) # TODO: get unified pair name
       
       print(sprintf("Get %s rate", usdt_settings$symbol))
       
@@ -425,7 +428,7 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
       
       data <- orderbooks_dt %>% 
         ## filter exchanges with revert in base/trading currency
-        filter(exchange != 2) %>% 
+        filter(exchange != 2) %>% # TODO: get unified names of symbol
         ##
         mutate(
           timestamp_round = to_timestamp(timestamp)
@@ -458,7 +461,7 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
       
       
       print(
-        sprintf("[WARN] Missed values for %s seconds", 
+        sprintf("[INFO] Missed values for %s seconds", 
                 data %>% filter(status != job$config$connected_bot_status) %>% pull(timestamp_round) %>% n_unique)
       )
       
@@ -523,7 +526,14 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
         summarise(
           total_volume = sum(volume),
           .groups = "drop"
-        ) %>% 
+        ) 
+      
+      if(nrow(volume_all_exchanges_dt) == 0) {
+        print("[WARN] There was no any arbitrage")
+        return(NULL)
+      }
+      
+      volume_all_exchanges_dt %<>% 
         
         ## liqudity volume
         spread(direction, total_volume) %>% 
@@ -586,7 +596,7 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
         filter(direction == 1) %>% 
         mutate(
           target = if_else(usdt_delta_refined > job$config$risks$min_order_volume_in_usdt, T, F) 
-          #target = if_else(target & usdt_delta_refined < job$config$risks$max_order_volume_in_usdt, T, F), # TODO
+          #target = if_else(target & usdt_delta_refined < job$config$risks$max_order_volume_in_usdt, T, F), # TODO: add max volume restiction
         )
       
       stopifnot(
@@ -594,15 +604,15 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
         !anyNA(arbitrage_cases_dt)
       )
       
-      
-      print(
-        arbitrage_cases_dt %>% 
-          filter(target) %>% 
-          sample_n(10) %>% 
-          select(timestamp_round, symbol, exchange, direction, price, volume, best_bid, best_ask, market_volume, usdt_delta_refined) %>% 
-          arrange(timestamp_round) %>% 
-          as_tibble
-      )
+      # DEBUG ONLY
+      #print(
+      #  arbitrage_cases_dt %>% 
+      #    filter(target) %>% 
+      #    sample_n(10) %>% 
+      #    select(timestamp_round, symbol, exchange, direction, price, volume, best_bid, best_ask, market_volume, usdt_delta_refined) %>% 
+      #    arrange(timestamp_round) %>% 
+      #    as_tibble
+      #)
       
       arbitrage_cases_dt %>%
         filter(target) %>% 
@@ -621,11 +631,11 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
       
       ## Calc and return final stats
       
-      arbitrage_cases_dt$exchange_name <- lapply(arbitrage_cases_dt$exchange, get_name_by_key, .dictionary = exchange_list)
+      arbitrage_cases_dt$exchange_name <- lapply(arbitrage_cases_dt$exchange, get_name_by_key, .dictionary = exchanges_list)
       
       arbitrage_cases_dt %>% 
         mutate(
-          exchange = factor(exchange, levels = exchange_list, labels = names(exchange_list)),
+          exchange = factor(exchange, levels = exchanges_list, labels = names(exchanges_list)),
           timestamp_1h = floor_date(timestamp, "1 hours")
         ) %>% 
         
@@ -640,6 +650,7 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
         )
       
       
+      # DEBUG ONLY
       #View(
       #  orderbooks_dt %>% 
       #    #filter(to_timestamp(timestamp) == 1610211368)
@@ -690,7 +701,8 @@ ggsave(
   filename = sprintf("arbitrage_cases.%s.png", Sys.Date()), path = "output",
   plot = last_plot(),
   width = 1920/320, height = 400*n_unique(arbitrage_stats$symbol)/320, 
-  units = "in", dpi = 320
+  units = "in", dpi = 320, 
+  limitsize = F
 )
 
 
