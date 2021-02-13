@@ -77,11 +77,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArbitralSystem.Distributor.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArbitralSystem.Test", "ArbitralSystem.Test\ArbitralSystem.Test.csproj", "{73FF4D95-CAB0-4931-9D34-541CB2BF7904}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{17F55B42-B1FA-42EE-A5E9-984FBE46B6F7}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArbitralSystem.Connectors.Bitfinex", "ArbitralSystem.Connectors.Bitfinex\ArbitralSystem.Connectors.Bitfinex.csproj", "{273AC0B7-2995-467D-B0A5-EE6D60818CCB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bitfinex.Net", "..\..\_connextors\Bitfinex.Net-master\Bitfinex.Net\Bitfinex.Net.csproj", "{E6D6F5AB-7D67-4038-B6C0-D74CF223AF59}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TradingBots", "TradingBots", "{CF68B9D4-1765-433C-A733-2B60B1680951}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArbitralSystem.Trading.SimpleTradingBot", "ArbitralSystem.Trading.SimpleTradingBot\ArbitralSystem.Trading.SimpleTradingBot.csproj", "{1C7D895B-E7E7-4081-B161-B4AA1039219F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -205,18 +205,14 @@ Global
 		{73FF4D95-CAB0-4931-9D34-541CB2BF7904}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{73FF4D95-CAB0-4931-9D34-541CB2BF7904}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{73FF4D95-CAB0-4931-9D34-541CB2BF7904}.Release|Any CPU.Build.0 = Release|Any CPU
-		{17F55B42-B1FA-42EE-A5E9-984FBE46B6F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{17F55B42-B1FA-42EE-A5E9-984FBE46B6F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{17F55B42-B1FA-42EE-A5E9-984FBE46B6F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{17F55B42-B1FA-42EE-A5E9-984FBE46B6F7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{273AC0B7-2995-467D-B0A5-EE6D60818CCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{273AC0B7-2995-467D-B0A5-EE6D60818CCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{273AC0B7-2995-467D-B0A5-EE6D60818CCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{273AC0B7-2995-467D-B0A5-EE6D60818CCB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E6D6F5AB-7D67-4038-B6C0-D74CF223AF59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E6D6F5AB-7D67-4038-B6C0-D74CF223AF59}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E6D6F5AB-7D67-4038-B6C0-D74CF223AF59}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E6D6F5AB-7D67-4038-B6C0-D74CF223AF59}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C7D895B-E7E7-4081-B161-B4AA1039219F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C7D895B-E7E7-4081-B161-B4AA1039219F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C7D895B-E7E7-4081-B161-B4AA1039219F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C7D895B-E7E7-4081-B161-B4AA1039219F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -251,7 +247,7 @@ Global
 		{FD715D8A-30FA-4978-8B2A-A6AE3B22FABB} = {74092463-BF86-4A7F-8993-A12E507D3198}
 		{73FF4D95-CAB0-4931-9D34-541CB2BF7904} = {74092463-BF86-4A7F-8993-A12E507D3198}
 		{273AC0B7-2995-467D-B0A5-EE6D60818CCB} = {030F27F5-7A75-4687-BABA-53910EE25612}
-		{E6D6F5AB-7D67-4038-B6C0-D74CF223AF59} = {030F27F5-7A75-4687-BABA-53910EE25612}
+		{1C7D895B-E7E7-4081-B161-B4AA1039219F} = {CF68B9D4-1765-433C-A733-2B60B1680951}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C71F41F0-CA79-4DBD-92BF-51B52308FD41}

@@ -7,6 +7,11 @@ namespace ArbitralSystem.Domain.MarketInfo
     {
         public Exchange Exchange { get; }
     }
+
+    public interface IExchangePairName
+    {
+        public string ExchangePairName { get; }
+    }
     
     
 }

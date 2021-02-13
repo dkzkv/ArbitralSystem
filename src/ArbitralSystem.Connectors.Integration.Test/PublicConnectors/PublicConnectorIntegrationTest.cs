@@ -34,7 +34,7 @@ namespace ArbitralSystem.Connectors.Integration.Test.PublicConnectors
         [DataRow(Exchange.Kucoin)]
         //[DataRow(Exchange.CoinEx)] Not supported 
         //[DataRow(Exchange.Bitmex)] Not supported 
-        [DataRow(Exchange.Bitfinex)]
+        //[DataRow(Exchange.Bitfinex)]
         public async Task GetServerTimeTest(Exchange exchange)
         {
             //Arrange

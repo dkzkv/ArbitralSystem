@@ -80,7 +80,8 @@ namespace ArbitralSystem.PublicMarketInfoService
 
             if(_configuration[SettingsNames.PairInfosCron] is var pairInfoCron &&  !string.IsNullOrEmpty(pairInfoCron))
                 RecurringJob.AddOrUpdate<PairInfoUpdaterJob>("Pair-info-update", x => x.Execute(), pairInfoCron);
-            if(_configuration[SettingsNames.PairPricesCron] is var pairPriceCron &&  !string.IsNullOrEmpty(pairInfoCron))
+            
+            if(_configuration[SettingsNames.PairPricesCron] is var pairPriceCron &&  !string.IsNullOrEmpty(pairPriceCron))
                 RecurringJob.AddOrUpdate<PairPricesJob>("Pair-prices-save", x => x.Execute(), pairPriceCron);
             
             app.UseSwagger();

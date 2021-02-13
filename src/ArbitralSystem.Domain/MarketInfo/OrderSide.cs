@@ -5,12 +5,7 @@
         Buy = 0,
         Sell = 1
     }
-
-    public enum OrderStatus
-    {
-        
-    }
-
+    
     public enum OrderType
     {
         /// <summary>
@@ -23,7 +18,7 @@
         /// </summary>
         Market,
 
-        /// <summary>
+      /*  /// <summary>
         /// Stop loss order. Will execute a market order when the price drops below a price to sell and therefor limit the loss
         /// </summary>
         StopLoss,
@@ -71,6 +66,6 @@
         /// <summary>
         /// 
         /// </summary>
-        Liquidation,
+        Liquidation,*/
     }
 }

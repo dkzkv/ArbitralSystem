@@ -3,10 +3,8 @@ using ArbitralSystem.Domain.MarketInfo;
 
 namespace ArbitralSystem.Connectors.CryptoExchange.Common
 {
-    public interface IDistributerOptions : ICloneable
+    public interface IDistributerOptions : IExchange, ICloneable
     {
-        Exchange Exchange { get; }
-
         int? Frequency { get; }
 
         int? Limit { get; }

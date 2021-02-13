@@ -87,8 +87,7 @@ namespace ArbitralSystem.Connectors.Integration.Test.SingleOrderBookDistributer
         
         private IOrderBookDistributerFactory CreateDistributerFactory()
         {
-            var options = new DistributerOptions {Frequency = 100};
-            return  new CryptoExOrderBookDistributerFactory(options,
+            return  new CryptoExOrderBookDistributerFactory(
                 DtoConverter,
                 Logger);
         }

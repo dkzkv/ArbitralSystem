@@ -1,6 +1,13 @@
+using ArbitralSystem.Domain.MarketInfo;
+
 namespace ArbitralSystem.Connectors.Core.Models
 {
-    public interface ICredentials
+    public interface IPrivateExchangeSettings : ICredentials, IExchange
+    {
+        long? AccountId { get; }        
+    }
+    
+    public interface ICredentials 
     {
         string ApiKey { get; }
         string SecretKey { get; }
