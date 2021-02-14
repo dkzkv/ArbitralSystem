@@ -33,7 +33,8 @@ namespace ArbitralSystem.Storage.MarketInfoStorageService.Persistence.Entities
                 .IsRequired();
             
             builder.Property(o => o.OrderSide)
-                .HasColumnType("tinyint")
+                .HasColumnType("bit")
+                .HasConversion(side => side == 0 ,side => side ? OrderSide.Buy : OrderSide.Sell)
                 .IsRequired();
             
             builder.Property(o => o.Exchange)
