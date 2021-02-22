@@ -15,7 +15,10 @@ suppressPackageStartupMessages({
   library(tidyr)
   library(magrittr)
   library(purrr)
+  library(furrr)
   library(data.table)
+  
+  library(odbc)
   
   library(stringr)
   library(lubridate)
@@ -28,18 +31,135 @@ suppressPackageStartupMessages({
 theme_set(theme_bw())
 
 
+# Experiment functions
+source("labs/delta_plot.R")
+
+
+# core.experiment.R ---
+
+#'
+#' ML Experiment functions
+#'
+
+
+
+#' Get experiment root directory
+#'
+#' @param .config 
+#'
+get_experiment_dir <- function(.config) {
+  stopifnot(is.list(.config))
+  sprintf("%s/%s", .config$experiment_dir, .config$experiment_version)
+}
+
+
+#' Get cache directory
+#'
+#' @param .config 
+#'
+get_checkpoint_dir <- function(.config) {
+  sprintf("%s/%s", get_experiment_dir(.config), .config$cache_dir)
+}
+
+
+#' Get cache directory
+#'
+#' @param .config 
+#'
+get_output_dir <- function(.config) {
+  sprintf("%s/%s", get_experiment_dir(.config), .config$output_dir)
+}
+
+
+#' Get cache directory
+#'
+#' @param .config 
+#'
+get_logs_dir <- function(.config) {
+  sprintf("%s/%s", get_experiment_dir(.config), .config$log_dir)
+}
+
+
+
+#' Initialize experiment
+#'
+#' @param .config 
+#'
+init_experiment <- function(.config) {
+  dir.create(
+    get_experiment_dir(.config), 
+    showWarnings = (.config$verbose != 0)
+  )
+  
+  dir.create(
+    get_checkpoint_dir(.config),
+    showWarnings = (.config$verbose != 0)
+  )
+  
+  dir.create(
+    get_output_dir(.config),
+    showWarnings = (.config$verbose != 0)
+  )
+  
+  dir.create(
+    get_logs_dir(.config),
+    showWarnings = (.config$verbose != 0)
+  )
+}
+
+
+#' Get Experiment Config
+#'
+#' @param .config_file 
+#' @param .stage_label 
+#' @param .secrets_file 
+#' 
+get_experiment_config <- function(.config_file = "config.yml",
+                                  .secrets_file = NA_character_, 
+                                  .stage_label = NA_character_) {
+  require(config)
+  
+  stopifnot(
+    is.character(.config_file),
+    is.character(.secrets_file),
+    is.character(.stage_label)
+  )
+  
+  # get full config
+  job_config <- config::get(file = .config_file)
+  stopifnot(
+    is.list(job_config),
+    !is.null(job_config)
+  )
+  
+  # get secrets
+  job_secrets <- list()
+  
+  if (!is.na(.secrets_file))
+    job_secrets <- config::get(file = .secrets_file)
+  
+  
+  # get current stage config
+  job_stage <- list()
+  
+  if (!is.na(.stage_label))
+    job_stage <- job_config$stages[[.stage_label]]
+  
+  
+  # return result
+  list(
+    config = job_config,
+    stage = job_stage,
+    secrets = job_secrets
+  )
+}
+
+
 
 # Get configs and set params ----
 
-job <- list(
-  config = config::get(),
-  secrets = config::get(file = "secrets.yml")
-)
-
-stopifnot(
-  is.list(job),
-  !is.null(job$config)
-)
+job <- get_experiment_config(.secrets_file = "secrets.yml", .stage_label = NA_character_)
+suppressWarnings(init_experiment(job$config))
 
 print(job$config)
 
@@ -325,9 +445,31 @@ print(jobs_settings)
 
 
 # Remove pair with stable coins
+
+is_valid_pair <- function(.symbol, .config) {
+  require(checkmate)
+  require(stringr)
+  
+  assert_character(.symbol, min.len = 1, any.missing = F)
+  assert_list(.config)
+  
+  !(
+    .symbol %in% .config$pairs$ignore_list |
+    .config$pairs$stable_coin_list %>% map_lgl(~ str_ends(.symbol, .x)) %>% any
+  )
+}
+
+
 not_usdt_indx <- jobs_settings %>% 
-  map_lgl(~ str_ends(.x$symbol, job$config$stable_coin_symbol, negate = T)) %>% 
+  map_lgl(~ is_valid_pair(.x$symbol, job$config) & .x$to_time > Sys.Date() - days(7)) %>% 
   which
+
+
+jobs_settings[not_usdt_indx] %>% map_chr(~ .x$symbol)
+
+# TODO: parallel
+#plan(multisession, workers = parallel::detectCores(logical = T))
+#future_map_dfr
 
 
 arbitrage_stats <- jobs_settings[not_usdt_indx] %>% 
@@ -340,8 +482,8 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
       
       ## Set lists
       #' Exchange list codes
-      exchanges_list <- c(1:6)
-      names(exchanges_list) <- c("Binance", "Bittrex", "CoinEx", "Huobi", "Kraken", "Kucoin")
+      exchanges_list <- c(1, 3:6)
+      names(exchanges_list) <- c("Binance", "CoinEx", "Huobi", "Kraken", "Kucoin")
       
       
       ## Get orderbook
@@ -427,8 +569,6 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
       ## Join all together
       
       data <- orderbooks_dt %>% 
-        ## filter exchanges with revert in base/trading currency
-        filter(exchange != 2) %>% # TODO: get unified names of symbol
         ##
         mutate(
           timestamp_round = to_timestamp(timestamp)
@@ -475,11 +615,12 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
         ggplot(aes(x = timestamp, y = price, color = exchange)) +
           geom_point(alpha = .25, size = .15) +
         
-          scale_x_datetime(date_breaks = "4 hours", date_labels = "%H:%M %b %d") +
+          scale_x_datetime(date_breaks = "6 hours", date_labels = "%H:%M %b %d") +
           facet_grid(direction_name ~ bot_status)
       
       ggsave(
-        filename = sprintf("orders.%s.%s.png", str_replace(.settings$symbol, "/", "-"), Sys.Date()), path = "output",
+        filename = get_plot_name(.settings$symbol, "bot_statuses"), 
+        path = get_output_dir(job$config),
         plot = last_plot(),
         width = 1920/320, height = 1280/320, 
         units = "in", dpi = 320
@@ -488,6 +629,17 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
       #
       data %<>% filter(status == job$config$connected_bot_status)
       
+      
+      ## Plot deltas
+      try(
+        ggsave(
+          filename = get_plot_name(.settings$symbol, "deltas"),
+          path = get_output_dir(job$config),
+          plot = data %>% plot_deltas,
+          width = 1920/320, height = 1280/320, 
+          units = "in", dpi = 320
+        )
+      )
       
       ## Best prices and total volume (all exchanges)
       
@@ -529,7 +681,7 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
         ) 
       
       if(nrow(volume_all_exchanges_dt) == 0) {
-        print("[WARN] There was no any arbitrage")
+        print("[WARN] There was no any arbitrage opportunity.")
         return(NULL)
       }
       
@@ -554,11 +706,8 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
       volume_all_exchanges_dt
       
       
-      
       ## Searching arbitrage cases
-      
       arbitrage_cases_dt <- data %>% 
-        
         ## get only quotes w/ arbitrage opportunity
         inner_join(
           prices_all_exchanges_dt,
@@ -568,7 +717,6 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
           volume_all_exchanges_dt,
           by = c("symbol", "timestamp_round")
         ) %>% 
-        
         ## TODO: correct volume to job$config$risks$max_order_volume_in_usdt
         
         ## calculate weighted delta
@@ -596,7 +744,7 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
         filter(direction == 1) %>% 
         mutate(
           target = if_else(usdt_delta_refined > job$config$risks$min_order_volume_in_usdt, T, F) 
-          #target = if_else(target & usdt_delta_refined < job$config$risks$max_order_volume_in_usdt, T, F), # TODO: add max volume restiction
+          #target = if_else(target & usdt_delta_refined < job$config$risks$max_order_volume_in_usdt, T, F), # TODO: add max volume restriction
         )
       
       stopifnot(
@@ -622,7 +770,8 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
           scale_y_log10()
       
       ggsave(
-        filename = sprintf("arbitrage-distibution.%s.%s.png", str_replace(.settings$symbol, "/", "-"), Sys.Date()), path = "output",
+        filename = get_plot_name(.settings$symbol, "arbitrage_distibution"), 
+        path = get_output_dir(job$config),
         plot = last_plot(),
         width = 1920/320, height = 1280/320, 
         units = "in", dpi = 320
@@ -652,12 +801,30 @@ arbitrage_stats <- jobs_settings[not_usdt_indx] %>%
       
       # DEBUG ONLY
       #View(
-      #  orderbooks_dt %>% 
-      #    #filter(to_timestamp(timestamp) == 1610211368)
-      #    sample_n(1) %>% 
+      #  data %>% 
+      #    filter(to_timestamp(timestamp) == 1612856716) %>% 
+      #    #sample_n(1) %>% 
       #    inner_join(
       #      arbitrage_cases_dt %>% select(timestamp, symbol),
       #      by = c("timestamp", "symbol")
+      #    )
+      #)
+      
+      
+      #View(
+      #  data %>% 
+      #    filter(
+      #      to_timestamp(timestamp) == 1612856716
+      #    ) %>% 
+      #    inner_join(
+      #      arbitrage_cases_dt %>% select(timestamp, symbol),
+      #      by = c("timestamp", "symbol")
+      #    ) %>% 
+      #    
+      #    group_by(exchange, symbol, direction) %>% 
+      #    summarise(
+      #      min_price = min(price),
+      #      max_price = max(price) 
       #    )
       #)
 
@@ -673,23 +840,24 @@ stopifnot(
 arbitrage_stats
 
 
-
-ggplot(arbitrage_stats) +
+arbitrage_stats %>% 
+  ggplot +
     geom_point(
-      aes(y = total_usdt_delta, x = timestamp_1h, size = total_usdt_delta),
+      aes(y = total_usdt_delta, x = timestamp_1h, size = total_usdt_delta + 1e-5),
       alpha = .4
     ) +
     
-    scale_x_datetime(date_breaks = "6 hours", date_labels = "%H:%M") +
+    scale_x_datetime(date_breaks = "6 hours", date_labels = "%d.%m %H:%M") +
     scale_y_log10() +
-    
+    #xlim(max(arbitrage_stats$timestamp_1h) - minutes(job$config$depth_in_minutes), max(arbitrage_stats$timestamp_1h)) +
+  
     facet_grid(symbol ~ exchange, scales = "free") +
     
     labs(
       title = "Arbitrage Volume",
-      subtitle = sprintf("From %s to %s", min(arbitrage_stats$timestamp_1h), max(arbitrage_stats$timestamp_1h)),
+      subtitle = sprintf("From %s to %s", max(arbitrage_stats$timestamp_1h) - minutes(job$config$depth_in_minutes), max(arbitrage_stats$timestamp_1h)),
       x = "", y = "Total Volume, USDT",
-      caption = "(c) 2021, github.com/dkzkv/ArbitralSystem."
+      caption = plot_caption
     ) +
   
     theme(
@@ -698,7 +866,8 @@ ggplot(arbitrage_stats) +
 
 
 ggsave(
-  filename = sprintf("arbitrage_cases.%s.png", Sys.Date()), path = "output",
+  filename = "arbitrage_cases.png", 
+  path = get_experiment_dir(job$config),
   plot = last_plot(),
   width = 1920/320, height = 400*n_unique(arbitrage_stats$symbol)/320, 
   units = "in", dpi = 320, 
@@ -709,4 +878,15 @@ ggsave(
 
 # Estimate arbitrage volume ----
 
+# TODO
+
+
+# GC ----
+
+c(public_market_data_db_con, market_info_db_con) %>% 
+  map(~ dbDisconnect(.x))
+
+gc()
+
+print("Completed.")
 
