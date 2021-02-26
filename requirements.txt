@@ -1,0 +1,8 @@
+setuptools
+setuptools_scm
+cython
+numpy
+tokenizer
+azureml-core
+azureml-train-automl-client
+azureml-sdk==1.20.0
