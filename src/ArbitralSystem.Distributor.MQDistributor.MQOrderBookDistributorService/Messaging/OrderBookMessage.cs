@@ -11,10 +11,9 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQOrderBookDistributorService
     [UsedImplicitly]
     internal class OrderBookMessage : BaseMessage, IOrderBookMessage
     {
-        public string Symbol { get; set;}
-        public Exchange Exchange { get; set;}
-        public DateTimeOffset CatchAt { get; set;}
-        public IEnumerable<OrderbookEntry> Bids { get; set;}
-        public IEnumerable<OrderbookEntry> Asks { get; set;}
+        public int ClientPairId { get; set; }
+        public DateTimeOffset CatchAt { get; set; }
+        public IEnumerable<OrderbookEntry> Bids { get; set; }
+        public IEnumerable<OrderbookEntry> Asks { get; set; }
     }
 }

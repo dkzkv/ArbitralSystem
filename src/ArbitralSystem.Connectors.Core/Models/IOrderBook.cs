@@ -6,6 +6,7 @@ namespace ArbitralSystem.Connectors.Core.Models
 {
     public interface IOrderBook : IExchange
     {
+        int? ClientPairId { get; }
         string Symbol { get;  }
 
         DateTimeOffset CatchAt { get; }

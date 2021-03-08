@@ -51,6 +51,7 @@ namespace ArbitralSystem.Connectors.CryptoExchange
 
             _orderBookDistributerInstance = new OrderBookDistributerInstance<TExchange>
             {
+                ClientPairId = pairInfo.ClientPairId,
                 InstanceSymbol = pairInfo.UnificatedPairName,
                 OrderBook = orderBook,
                 Token = token
@@ -85,6 +86,7 @@ namespace ArbitralSystem.Connectors.CryptoExchange
 
             var state = new DistributerState
             {
+                ClientPairId = _orderBookDistributerInstance.ClientPairId,
                 PreviousStatus = previousStatus,
                 CurrentStatus = currentStatus,
                 Exchange = Exchange,
@@ -158,6 +160,7 @@ namespace ArbitralSystem.Connectors.CryptoExchange
             var orderBook = _converter.Convert<SymbolOrderBook, OrderBook>(instance.OrderBook);
             orderBook.Symbol = instance.InstanceSymbol;
             orderBook.Exchange = Exchange;
+            orderBook.ClientPairId = instance.ClientPairId;
             return orderBook;
         }
 

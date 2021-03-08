@@ -77,12 +77,11 @@ namespace ArbitralSystem.Storage.MarketInfoStorageService.Persistence.Repositori
         {
             return new OrderbookPriceEntry
             {
+                ClientPairId = orderBook.ClientPairId,
                 UtcCatchAt = orderBook.CatchAt.UtcDateTime,
-                Exchange = orderBook.Exchange,
                 OrderSide = orderSide,
                 Price = entry.Price,
                 Quantity = entry.Quantity,
-                Symbol = orderBook.Symbol
             };
         }
     }

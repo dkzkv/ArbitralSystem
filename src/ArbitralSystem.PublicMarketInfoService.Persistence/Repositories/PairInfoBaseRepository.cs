@@ -15,7 +15,7 @@ namespace ArbitralSystem.PublicMarketInfoService.Persistence.Repositories
         {
         }
 
-        public async Task<PairInfo> GetAsync(Guid id, CancellationToken cancellationToken)
+        public async Task<PairInfo> GetAsync(int id, CancellationToken cancellationToken)
         {
             var pairInfo = await DbContext.PairInfos.FirstOrDefaultAsync(o => o.Id.Equals(id), cancellationToken);
             return Mapper.Map<PairInfo>(pairInfo);
@@ -23,13 +23,13 @@ namespace ArbitralSystem.PublicMarketInfoService.Persistence.Repositories
 
         public async Task<PairInfo> CreateAsync(PairInfo pairInfo, CancellationToken cancellationToken)
         {
-            var existedPair = await GetAsync(pairInfo.Id, cancellationToken);
+            var existedPair = pairInfo.Id.HasValue ? await GetAsync(pairInfo.Id.Value, cancellationToken) : null;
             if (existedPair != null)
                 throw new InvalidOperationException($"Can not create PairInfo .PairInfo with id {pairInfo.Id} already exist");
             
-            DbContext.PairInfos.Add(Mapper.Map<Entities.PairInfo>(pairInfo));
+            var savedPair = DbContext.PairInfos.Add(Mapper.Map<Entities.PairInfo>(pairInfo));
             await DbContext.SaveChangesAsync(cancellationToken);
-            return Mapper.Map<PairInfo>(await GetAsync(pairInfo.Id, cancellationToken));
+            return Mapper.Map<PairInfo>(await GetAsync(savedPair.Entity.Id, cancellationToken));
         }
 
         public async Task<IEnumerable<PairInfo>> CreateRangeAsync(PairInfo[] pairInfos, CancellationToken cancellationToken)
@@ -92,7 +92,7 @@ namespace ArbitralSystem.PublicMarketInfoService.Persistence.Repositories
         }
 
 
-        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
+        public async Task DeleteAsync(int id, CancellationToken cancellationToken)
         {
             var existedPair = await DbContext.PairInfos.FirstOrDefaultAsync(o => o.Id.Equals(id), cancellationToken);
             if (existedPair is null) throw new InvalidOperationException($"Can not delete PairInfo. PairInfo with id: {id} not exist");

@@ -14,7 +14,9 @@ namespace ArbitralSystem.PublicMarketInfoService.Persistence.Mapping
                 new PairInfo(o.Id, o.ExchangePairName, o.UnificatedPairName, o.BaseCurrency, o.QuoteCurrency, o.UtcCreatedAt, o.UtcDelistedAt, o.Exchange));
             
             CreateMap<Entities.PairInfo, IPairInfo>().As<PairInfoAuxiliaryModel>();
-            CreateMap<Entities.PairInfo, PairInfoAuxiliaryModel>();
+            CreateMap<Entities.PairInfo, PairInfoAuxiliaryModel>()
+                .ForMember(destination => destination.CreatedAt, o => o.MapFrom(source => source.UtcCreatedAt))
+                .ForMember(destination => destination.DelistedAt, o => o.MapFrom(source => source.UtcDelistedAt));
         }
     }
 }

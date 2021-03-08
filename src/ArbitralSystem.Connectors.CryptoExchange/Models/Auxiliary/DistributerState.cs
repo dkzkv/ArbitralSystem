@@ -7,6 +7,7 @@ namespace ArbitralSystem.Connectors.CryptoExchange.Models
 {
     internal class DistributerState : IDistributerState
     {
+        public int? ClientPairId { get; set; }
         public string Symbol { get; set;}
         public Exchange Exchange { get; set;}
         public DateTimeOffset ChangedAt { get; set; }

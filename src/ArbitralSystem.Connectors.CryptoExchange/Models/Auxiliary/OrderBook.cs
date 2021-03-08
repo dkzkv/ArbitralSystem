@@ -7,6 +7,7 @@ namespace ArbitralSystem.Connectors.CryptoExchange.Models
 {
     internal class OrderBook : IOrderBook
     {
+        public int? ClientPairId { get; set; }
         public string Symbol { get; set; }
         public DateTimeOffset CatchAt { get; set;}
         public IEnumerable<IOrderbookEntry> Bids { get; set; }

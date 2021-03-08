@@ -4,7 +4,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using ArbitralSystem.Connectors.Core.Models;
 using ArbitralSystem.Distributor.Core.Common;
-[assembly:InternalsVisibleTo("ArbitralSystem.Distributor.Core.Test")]
+
+[assembly: InternalsVisibleTo("ArbitralSystem.Distributor.Core.Test")]
+
 namespace ArbitralSystem.Distributor.Core
 {
     internal static class OrderbookTrimmer
@@ -25,7 +27,8 @@ namespace ArbitralSystem.Distributor.Core
             if (orderBook.Bids.Count() > count)
                 bids.RemoveRange(count, bids.Count - count);
 
-            return new OrderBook(orderBook.Exchange, orderBook.Symbol, orderBook.CatchAt, bids, asks, orderBook.BestBid, orderBook.BestAsk);
+            return new OrderBook(orderBook.Exchange, orderBook.Symbol, orderBook.CatchAt, bids, asks, orderBook.BestBid, orderBook.BestAsk,
+                orderBook.ClientPairId);
         }
     }
 }

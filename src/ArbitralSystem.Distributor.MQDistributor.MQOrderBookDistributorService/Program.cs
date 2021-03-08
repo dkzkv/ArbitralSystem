@@ -125,11 +125,6 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQOrderBookDistributorService
                         
                         x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
                         {
-                            cfg.Host(new Uri(mqOptions.Host), h =>
-                            {
-                                h.PublisherConfirmation = false;
-                            });
-                            
                             // RoundRobin
                             cfg.ReceiveEndpoint(Constants.Queues.MQOrderBookDistributorPrefix, e =>
                             {

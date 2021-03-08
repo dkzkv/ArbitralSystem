@@ -9,7 +9,7 @@ namespace ArbitralSystem.PublicMarketInfoService.Persistence.Mapping.AuxiliaryMo
     [UsedImplicitly]
     internal class PairInfoAuxiliaryModel : IPairInfo
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public string ExchangePairName { get; set; }
         public string UnificatedPairName { get; set; }
         public string BaseCurrency { get; set; }

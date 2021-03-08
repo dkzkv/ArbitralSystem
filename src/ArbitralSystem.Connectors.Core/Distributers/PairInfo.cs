@@ -6,12 +6,17 @@ namespace ArbitralSystem.Connectors.Core.Distributers
 {
     public class OrderBookPairInfo
     {
+        public int? ClientPairId { get; }
         public string UnificatedPairName { get; }
         public string ExchangePairName { get; }
         public Exchange Exchange { get; }
 
-        public OrderBookPairInfo(Exchange exchange,string exchangePairName,string unificatedPairName )
+        public OrderBookPairInfo(Exchange exchange,string exchangePairName,string unificatedPairName , int? clientPairId = null)
         {
+            if(clientPairId.HasValue && clientPairId.Value <= 0)
+                throw new ArgumentException("Client order id should be positive value.");
+            ClientPairId = clientPairId;
+            
             if (exchange == Exchange.Undefined)
                 throw new WebsocketException("Un expected exchange to start orderbook distribution");
             

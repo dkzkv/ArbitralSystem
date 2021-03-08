@@ -6,30 +6,20 @@ using ArbitralSystem.Domain.MarketInfo;
 
 namespace ArbitralSystem.Storage.MarketInfoStorageService.Domain.Models
 {
-    public class OrderBook : IExchange
+    public class OrderBook 
     {
-        public Guid Id { get; }
-        public string Symbol { get;  }
-        public Exchange Exchange { get; }
+        public int ClientPairId { get; }
         public DateTimeOffset CatchAt { get; }
         public IEnumerable<OrderbookEntry> Bids { get; }
         public IEnumerable<OrderbookEntry> Asks { get; }
 
-        public OrderBook(string symbol, Exchange exchange, DateTimeOffset catchAt, IEnumerable<OrderbookEntry> asks, IEnumerable<OrderbookEntry> bids)
+        public OrderBook(int clientPairId, DateTimeOffset catchAt, IEnumerable<OrderbookEntry> asks, IEnumerable<OrderbookEntry> bids)
         {
-            Id = Guid.NewGuid();
+            if(clientPairId<=0)
+                throw new ArgumentException("Client pair id should be positive value");
+            ClientPairId = clientPairId;
             
-            if(!symbol.Contains('/'))
-                throw new ArgumentException("Symbol must be in unificated format");
-
-            Symbol = symbol;
-                
-            if(exchange == Exchange.Undefined)
-                throw new ArgumentException("Exchange can not be undefined.");
-
-            Exchange = exchange;
             CatchAt = catchAt;
-
             ValidateOrderBookEntries(bids);
             ValidateOrderBookEntries(asks);
             

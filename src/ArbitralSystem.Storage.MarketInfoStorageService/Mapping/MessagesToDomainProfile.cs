@@ -13,8 +13,7 @@ namespace ArbitralSystem.Storage.MarketInfoStorageService.Mapping
                 .ConstructUsing(o=> new OrderbookEntry(o.Price,o.Quantity));
 
             CreateMap<IOrderBookMessage, OrderBook>()
-                .ConstructUsing((o, ctx) => new OrderBook(o.Symbol,
-                    o.Exchange,
+                .ConstructUsing((o, ctx) => new OrderBook(o.ClientPairId,
                     o.CatchAt,
                     ctx.Mapper.Map<IEnumerable<OrderbookEntry>>(o.Asks),
                     ctx.Mapper.Map<IEnumerable<OrderbookEntry>>(o.Bids)));

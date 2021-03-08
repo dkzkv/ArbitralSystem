@@ -28,18 +28,14 @@ namespace ArbitralSystem.Storage.MarketInfoStorageService.Persistence.Migrations
                         .HasAnnotation("SqlServer:IdentitySeed", 1)
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<byte>("CurrentStatus")
-                        .HasColumnType("tinyint");
+                    b.Property<int>("ClientPairId")
+                        .HasColumnType("int");
 
-                    b.Property<byte>("Exchange")
+                    b.Property<byte>("CurrentStatus")
                         .HasColumnType("tinyint");
 
                     b.Property<byte>("PreviousStatus")
                         .HasColumnType("tinyint");
-
-                    b.Property<string>("Symbol")
-                        .IsRequired()
-                        .HasColumnType("varchar(32)");
 
                     b.Property<DateTime>("UtcChangedAt")
                         .HasColumnType("datetime2");
@@ -51,8 +47,8 @@ namespace ArbitralSystem.Storage.MarketInfoStorageService.Persistence.Migrations
 
             modelBuilder.Entity("ArbitralSystem.Storage.MarketInfoStorageService.Persistence.Entities.OrderbookPriceEntry", b =>
                 {
-                    b.Property<byte>("Exchange")
-                        .HasColumnType("tinyint");
+                    b.Property<int>("ClientPairId")
+                        .HasColumnType("int");
 
                     b.Property<bool>("OrderSide")
                         .HasColumnType("bit");
@@ -62,10 +58,6 @@ namespace ArbitralSystem.Storage.MarketInfoStorageService.Persistence.Migrations
 
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(19,9)");
-
-                    b.Property<string>("Symbol")
-                        .IsRequired()
-                        .HasColumnType("varchar(32)");
 
                     b.Property<DateTime>("UtcCatchAt")
                         .HasColumnType("datetime2");

@@ -11,7 +11,8 @@ namespace ArbitralSystem.PublicMarketInfoService.Persistence.Migrations
                 name: "PairInfos",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(nullable: false),
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     ExchangePairName = table.Column<string>(type: "varchar(32)", nullable: false),
                     UnificatedPairName = table.Column<string>(type: "varchar(32)", nullable: false),
                     BaseCurrency = table.Column<string>(type: "varchar(16)", nullable: false),

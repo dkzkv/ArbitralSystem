@@ -13,8 +13,7 @@ namespace ArbitralSystem.Storage.MarketInfoStorageService.Persistence.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Symbol = table.Column<string>(type: "varchar(32)", nullable: false),
-                    Exchange = table.Column<byte>(type: "tinyint", nullable: false),
+                    ClientPairId = table.Column<int>(nullable: false),
                     UtcChangedAt = table.Column<DateTime>(nullable: false),
                     PreviousStatus = table.Column<byte>(type: "tinyint", nullable: false),
                     CurrentStatus = table.Column<byte>(type: "tinyint", nullable: false)
@@ -28,10 +27,9 @@ namespace ArbitralSystem.Storage.MarketInfoStorageService.Persistence.Migrations
                 name: "OrderbookPriceEntries",
                 columns: table => new
                 {
-                    Symbol = table.Column<string>(type: "varchar(32)", nullable: false),
+                    ClientPairId = table.Column<int>(nullable: false),
                     Price = table.Column<decimal>(type: "decimal(19,9)", nullable: false),
                     Quantity = table.Column<decimal>(type: "decimal(19,9)", nullable: false),
-                    Exchange = table.Column<byte>(type: "tinyint", nullable: false),
                     OrderSide = table.Column<bool>(type: "bit", nullable: false),
                     UtcCatchAt = table.Column<DateTime>(nullable: false)
                 },

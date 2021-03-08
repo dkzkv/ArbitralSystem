@@ -21,9 +21,10 @@ namespace ArbitralSystem.PublicMarketInfoService.Persistence.Migrations
 
             modelBuilder.Entity("ArbitralSystem.PublicMarketInfoService.Persistence.Entities.PairInfo", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("BaseCurrency")
                         .IsRequired()

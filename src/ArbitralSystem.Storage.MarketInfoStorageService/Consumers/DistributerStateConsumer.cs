@@ -32,7 +32,7 @@ namespace ArbitralSystem.Storage.MarketInfoStorageService.Consumers
 
             try
             {
-                var state = new DistributerState(context.Message.Symbol, context.Message.Exchange, context.Message.ChangedAt,
+                var state = new DistributerState(context.Message.ClientPairId, context.Message.ChangedAt,
                     context.Message.PreviousStatus, context.Message.CurrentStatus);
                 
                 var result = await ArbitralStopWatch

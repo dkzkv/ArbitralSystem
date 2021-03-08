@@ -7,8 +7,7 @@ namespace ArbitralSystem.Messaging.Messages
 {
     public interface IDistributerStateMessage :  ICorrelation
     {
-        string Symbol { get; }
-        Exchange Exchange { get; }
+        int ClientPairId { get; }
         DateTimeOffset ChangedAt { get;  }
         DistributerSyncStatus PreviousStatus { get;  }
         DistributerSyncStatus CurrentStatus { get; }

@@ -6,6 +6,7 @@ namespace ArbitralSystem.Connectors.Core.Models
 {
     public interface IDistributerState
     {
+        int? ClientPairId { get; }
         string Symbol { get;}
         Exchange Exchange { get;}
         DateTimeOffset ChangedAt { get; }

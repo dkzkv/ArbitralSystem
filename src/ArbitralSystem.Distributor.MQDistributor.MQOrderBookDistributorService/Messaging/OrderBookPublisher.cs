@@ -1,4 +1,6 @@
+using System;
 using System.Threading.Tasks;
+using ArbitralSystem.Common.Logger;
 using ArbitralSystem.Common.Validation;
 using ArbitralSystem.Connectors.Core.Models;
 using ArbitralSystem.Distributor.Core.Interfaces;
@@ -11,18 +13,27 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQOrderBookDistributorService
     internal class OrderBookPublisher : IOrderBookPublisher
     {
         private readonly IPublishEndpoint _publishEndpoint;
+        private readonly ILogger _logger;
         private readonly IMapper _mapper;
         
-        public OrderBookPublisher(IPublishEndpoint publishEndpoint, IMapper mapper)
+        public OrderBookPublisher(IPublishEndpoint publishEndpoint,ILogger logger, IMapper mapper)
         {
-            Preconditions.CheckNotNull(publishEndpoint, mapper);
+            Preconditions.CheckNotNull(publishEndpoint, mapper,logger);
             _mapper = mapper;
+            _logger = logger;
             _publishEndpoint = publishEndpoint;
         }
         
         public async Task Publish(IOrderBook orderbook)
         {
-            await _publishEndpoint.Publish(_mapper.Map<IOrderBookMessage>(orderbook));
+            try
+            {
+                await _publishEndpoint.Publish(_mapper.Map<IOrderBookMessage>(orderbook));
+            }
+            catch (Exception e)
+            {
+                _logger.Error(e,"Error while publishing order book.");
+            }
         }
 
         public async Task Publish(IDistributerState orderBookState)

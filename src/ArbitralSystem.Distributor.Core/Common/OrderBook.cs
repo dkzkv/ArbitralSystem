@@ -8,6 +8,7 @@ namespace ArbitralSystem.Distributor.Core.Common
 {
     internal class OrderBook : IOrderBook
     {
+        public int? ClientPairId { get; }
         public Exchange Exchange { get; }
         public string Symbol { get; }
         public DateTimeOffset CatchAt { get; }
@@ -22,7 +23,8 @@ namespace ArbitralSystem.Distributor.Core.Common
             IEnumerable<IOrderbookEntry> bids,
             IEnumerable<IOrderbookEntry> asks,
             IOrderbookEntry bestBid,
-            IOrderbookEntry bestAsk)
+            IOrderbookEntry bestAsk,
+            int? clientPairId = null)
         {
             Exchange = exchange;
             Symbol = symbol;
@@ -31,6 +33,7 @@ namespace ArbitralSystem.Distributor.Core.Common
             Asks = asks;
             BestBid = bestBid;
             BestAsk = bestAsk;
+            ClientPairId = clientPairId;
         }
     }
 }
