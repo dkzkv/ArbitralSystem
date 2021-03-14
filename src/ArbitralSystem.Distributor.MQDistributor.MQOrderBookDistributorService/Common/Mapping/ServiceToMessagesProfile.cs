@@ -10,8 +10,8 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQOrderBookDistributorService
     {
         public ServiceToMessagesProfile()
         {
-            CreateMap<IOrderBook,IOrderBookMessage>().As<OrderBookMessage>();
-            CreateMap<IOrderBook,OrderBookMessage>();
+            CreateMap<IDistributorOrderBook,IOrderBookMessage>().As<OrderBookMessage>();
+            CreateMap<IDistributorOrderBook,OrderBookMessage>();
             CreateMap<IOrderbookEntry, OrderbookEntry>();
             
             CreateMap<IDistributerState,IDistributerStateMessage>().As<DistributerStateMessage>();

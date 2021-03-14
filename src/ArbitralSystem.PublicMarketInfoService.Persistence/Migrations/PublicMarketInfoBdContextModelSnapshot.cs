@@ -15,34 +15,35 @@ namespace ArbitralSystem.PublicMarketInfoService.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.5")
+                .HasAnnotation("ProductVersion", "3.1.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("ArbitralSystem.PublicMarketInfoService.Persistence.Entities.PairInfo", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("BaseCurrency")
                         .IsRequired()
-                        .HasColumnType("varchar(8)");
+                        .HasColumnType("varchar(16)");
 
                     b.Property<byte>("Exchange")
                         .HasColumnType("tinyint");
 
                     b.Property<string>("ExchangePairName")
                         .IsRequired()
-                        .HasColumnType("varchar(16)");
+                        .HasColumnType("varchar(32)");
 
                     b.Property<string>("QuoteCurrency")
                         .IsRequired()
-                        .HasColumnType("varchar(8)");
+                        .HasColumnType("varchar(16)");
 
                     b.Property<string>("UnificatedPairName")
                         .IsRequired()
-                        .HasColumnType("varchar(16)");
+                        .HasColumnType("varchar(32)");
 
                     b.Property<DateTime>("UtcCreatedAt")
                         .HasColumnType("smalldatetime");
@@ -66,8 +67,8 @@ namespace ArbitralSystem.PublicMarketInfoService.Persistence.Migrations
 
                     b.Property<string>("ExchangePairName")
                         .IsRequired()
-                        .HasColumnType("varchar(16)")
-                        .HasMaxLength(12);
+                        .HasColumnType("varchar(32)")
+                        .HasMaxLength(32);
 
                     b.Property<decimal?>("Price")
                         .HasColumnType("decimal(19,9)");

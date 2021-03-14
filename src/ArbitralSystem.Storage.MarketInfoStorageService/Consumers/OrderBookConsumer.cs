@@ -33,7 +33,7 @@ namespace ArbitralSystem.Storage.MarketInfoStorageService.Consumers
 
         public async Task Consume(ConsumeContext<IOrderBookPackageMessage> context)
         {
-            _logger.Information("Order book package message received: {@mess}, retry attempt: {attempt}", context.Message, context.GetRetryAttempt());
+            _logger.Information("Order book package message received: {id}, retry attempt: {attempt}", context.CorrelationId, context.GetRetryAttempt());
             
             try
             {

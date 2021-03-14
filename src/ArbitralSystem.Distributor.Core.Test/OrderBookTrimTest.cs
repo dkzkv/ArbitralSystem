@@ -34,7 +34,7 @@ namespace ArbitralSystem.Distributor.Core.Test
             var bids = _fixture.CreateMany<IOrderbookEntry>(bidsCount);
             var orderbookEntry = _fixture.Create<IOrderbookEntry>();
 
-            var orderBook = new OrderBook(Exchange.Undefined, "", DateTimeOffset.Now, bids,asks, orderbookEntry, orderbookEntry);
+            var orderBook = new DistributorOrderBook(Exchange.Undefined, "", DateTimeOffset.Now, bids,asks, orderbookEntry, orderbookEntry);
 
             var trimmedOrderBook = OrderbookTrimmer.Trim(orderBook, trimLimit);
             Assert.AreEqual(trimmedOrderBook.Asks.Count(), expectedAsksCount);

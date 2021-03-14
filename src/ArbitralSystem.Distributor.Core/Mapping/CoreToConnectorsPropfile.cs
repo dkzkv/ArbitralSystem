@@ -8,7 +8,7 @@ namespace ArbitralSystem.Distributor.Core.Mapping
     {
         public CoreToConnectorsProfile()
         {
-            CreateMap<PairInfo, OrderBookPairInfo>().ConstructUsing(o => new OrderBookPairInfo(o.Exchange, o.ExchangePairName, o.UnificatedPairName));
+            CreateMap<PairInfo, OrderBookPairInfo>().ConstructUsing(o => new OrderBookPairInfo(o.Exchange, o.ExchangePairName, o.UnificatedPairName, o.PairId));
         }
     }
 }

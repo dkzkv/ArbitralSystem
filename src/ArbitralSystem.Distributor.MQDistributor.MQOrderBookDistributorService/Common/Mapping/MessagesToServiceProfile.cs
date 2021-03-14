@@ -10,7 +10,7 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQOrderBookDistributorService
         public MessagesToServiceProfile()
         {
             CreateMap<ArbitralSystem.Messaging.Models.PairInfo, PairInfo>()
-                .ConstructUsing(o=> new PairInfo(o.Exchange,o.UnificatedPairName,o.ExchangePairName));
+                .ConstructUsing(o=> new PairInfo(o.PairId,o.Exchange,o.UnificatedPairName,o.ExchangePairName));
             
             CreateMap<IStartOrderBookDistribution, ExchangePairInfo>().ConstructUsing((o,ctx) => 
                 new ExchangePairInfo(ctx.Mapper.Map<IEnumerable<PairInfo>>(o.PairInfos) ));

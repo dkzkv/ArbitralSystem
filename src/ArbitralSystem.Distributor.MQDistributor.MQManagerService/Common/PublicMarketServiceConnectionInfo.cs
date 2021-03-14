@@ -5,11 +5,9 @@ using JetBrains.Annotations;
 namespace ArbitralSystem.Distributor.MQDistributor.MQManagerService.Common
 {
     [UsedImplicitly]
-    internal class PublicMarketServiceConnectionInfo : IConnectionInfo
+    internal class PublicMarketServiceConnectionInfo
     {
-        public string BaseRestUrl { get; set; }
-        public string ApiKey { get; set; }
-        public string ApiSecret { get; set; }
+        public string BaseUrl { get; set; }
         public int DefaultTimeOutInMs { get; set;}
     }
 }

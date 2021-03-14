@@ -7,8 +7,7 @@ namespace ArbitralSystem.Messaging.Messages
 {
     public interface IOrderBookMessage : ICorrelation
     {
-        string Symbol { get; }
-        Exchange Exchange { get; }
+        int ClientPairId { get; set; }
         DateTimeOffset CatchAt { get; }
         IEnumerable<OrderbookEntry> Bids { get; }
         IEnumerable<OrderbookEntry> Asks { get; }

@@ -11,7 +11,7 @@ namespace ArbitralSystem.Common.Test
         [TestMethod]
         public void DateTimeToTimeStampMethod()
         {
-            var unixTime = TimeHelper.DateTimeToTimeStamp(new System.DateTime(2000, 1, 1, 0, 0, 0));
+            var unixTime = TimeHelper.DateTimeToTimeStamp(new System.DateTime(2000, 1, 1, 0, 0, 0), false);
             Assert.AreEqual(unixTime, 946684800);
         }
 
@@ -19,7 +19,7 @@ namespace ArbitralSystem.Common.Test
         public void TimeStampToDateTime()
         {
             var targetDate = new System.DateTime(2000, 1, 1, 0, 0, 0);
-            var dateTime = TimeHelper.TimeStampToUtcDateTime(946684800);
+            var dateTime = TimeHelper.TimeStampToUtcDateTime(946684800, false);
             Assert.AreEqual(dateTime, targetDate);
         }
     }

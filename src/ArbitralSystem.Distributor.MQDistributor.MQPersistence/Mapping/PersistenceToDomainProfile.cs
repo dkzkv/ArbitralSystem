@@ -28,7 +28,9 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQPersistence.Mapping
                     o.CreatedAt,
                     o.ModifyAt,
                     m.Mapper.Map<Status>(o.Status),
-                    m.Mapper.Map<Server>(o.Server)));
+                    m.Mapper.Map<Server>(o.Server),
+                    o.Exchanges.Select(ex=> (Exchange)ex.ExchangeId)))
+                .ForMember(x => x.Exchanges, opt => opt.Ignore());
             
             CreateMap<Entities.Server,IServer>().As<ServerAuxiliaryModel>();
             CreateMap<Entities.Server,ServerAuxiliaryModel>();

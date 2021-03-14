@@ -45,8 +45,6 @@ namespace ArbitralSystem.Distributor.MarketInfoAggregatorService
             {
                 _logger.Error(e,"Error while sending orderbook package.");
             }
-            
-            
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)

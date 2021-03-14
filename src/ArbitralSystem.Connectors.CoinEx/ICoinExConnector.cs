@@ -9,6 +9,6 @@ namespace ArbitralSystem.Connectors.CoinEx
     {
         Task<IResponse<IEnumerable<string>>> GetMarketList();
 
-        Task<IResponse<MarketInfo>> GetMarketSingleInfo(string symbol);
+        Task<IResponse<IMarketInfo>> GetMarketSingleInfo(string symbol);
     }
 }

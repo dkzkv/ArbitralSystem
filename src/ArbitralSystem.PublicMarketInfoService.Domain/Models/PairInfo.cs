@@ -5,7 +5,7 @@ namespace ArbitralSystem.PublicMarketInfoService.Domain.Models
 {
     public class PairInfo 
     {
-        public Guid Id { get; }
+        public int? Id { get; }
         public string ExchangePairName { get; }
         public string UnificatedPairName { get; }
         public string BaseCurrency { get; }
@@ -17,7 +17,7 @@ namespace ArbitralSystem.PublicMarketInfoService.Domain.Models
         public PairInfo(string exchangePairName, string baseCurrency, string quoteCurrency, string unificatedPairName, Exchange exchange)
         {
             ValidatePair(baseCurrency, quoteCurrency, unificatedPairName);
-            Id = Guid.NewGuid();
+            Id = null;
             //can be empty
             ExchangePairName = exchangePairName;
             UnificatedPairName = unificatedPairName;
@@ -31,7 +31,7 @@ namespace ArbitralSystem.PublicMarketInfoService.Domain.Models
         /// <summary>
         /// Just for mapping from persistence layer
         /// </summary>
-        public PairInfo(Guid id,
+        public PairInfo(int id,
             string exchangePairName,
             string unificatedPairName,
             string baseCurrency,

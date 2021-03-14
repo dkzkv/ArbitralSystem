@@ -122,11 +122,9 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQOrderBookDistributorService
                         x.AddConsumer<JobCancellationConsumer>();
                         MessageCorrelation.UseCorrelationId<IStartOrderBookDistribution>(o => o.CorrelationId);
                         MessageCorrelation.UseCorrelationId<IStopOrderBookDistribution>(o => o.CorrelationId);
-
+                        
                         x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
                         {
-                            cfg.Host(new Uri(mqOptions.Host), h => { });
-                            
                             // RoundRobin
                             cfg.ReceiveEndpoint(Constants.Queues.MQOrderBookDistributorPrefix, e =>
                             {
@@ -134,7 +132,7 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQOrderBookDistributorService
                                 e.PrefetchCount = serviceOptions.MaxWorkersCount;
                                 e.ConfigureConsumer<OrderBookDistributorConsumer>(provider);
                             });
-
+                            
                             // Fan-out
                             cfg.ReceiveEndpoint(Constants.Queues.MQOrderBookDistributorCancellationPrefix + serviceOptions.ServerName, e =>
                             {

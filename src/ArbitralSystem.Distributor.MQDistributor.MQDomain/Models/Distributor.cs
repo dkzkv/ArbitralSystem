@@ -44,7 +44,7 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQDomain.Models
         }
         
         //only for mapping from persistence layer
-        public Distributor(Guid id, string name, DistributorType type, DateTimeOffset createdAt, DateTimeOffset? modifyAt, Status status, Server server)
+        public Distributor(Guid id, string name, DistributorType type, DateTimeOffset createdAt, DateTimeOffset? modifyAt, Status status, Server server, IEnumerable<Exchange> exchanges)
         {
             Id = id;
             Name = name;
@@ -53,6 +53,7 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQDomain.Models
             ModifyAt = modifyAt;
             Status = status;
             Server = server;
+            Exchanges = exchanges;
         }
     }
 }

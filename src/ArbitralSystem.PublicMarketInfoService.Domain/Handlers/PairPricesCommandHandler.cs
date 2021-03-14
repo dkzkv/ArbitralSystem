@@ -44,6 +44,7 @@ namespace ArbitralSystem.PublicMarketInfoService.Domain.Handlers
                 .Select(o => new PairPrice(o.ExchangePairName, o.Price, o.Exchange))
                 .ToArray();
             _logger.Information($"Pair prices pulled, total: {prices.Count()}.");
+
             await _pairPricesRepository.BulkSave(prices, token);
             _logger.Information($"Pair prices successfully saved.");
             return Unit.Value;

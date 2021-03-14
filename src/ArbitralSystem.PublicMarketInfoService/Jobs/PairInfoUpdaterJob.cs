@@ -29,6 +29,7 @@ namespace ArbitralSystem.PublicMarketInfoService.Jobs
             _logger.Information("Pair info update job started.");
             var tokenSource = new CancellationTokenSource(new TimeSpan(0, 15, 0));
             var command = new CreateOrDelistPairsForExchangesCommand(ExchangeHelper.GetAll());
+
             await _mediator.Send(command, tokenSource.Token);
         }
     }

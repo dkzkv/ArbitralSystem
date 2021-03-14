@@ -5,12 +5,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AutoMapper" Version="9.0.0" />
+      <PackageReference Include="AutoMapper" Version="10.1.1" />
       <PackageReference Include="Polly" Version="7.2.1" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\ArbitralSystem.Common\ArbitralSystem.Common.csproj" />
+      <ProjectReference Include="..\ArbitralSystem.Connectors.ArbitralPublicMarketInfoConnector\ArbitralSystem.Connectors.ArbitralPublicMarketInfoConnector.csproj" />
       <ProjectReference Include="..\ArbitralSystem.Connectors.Core\ArbitralSystem.Connectors.Core.csproj" />
     </ItemGroup>
 

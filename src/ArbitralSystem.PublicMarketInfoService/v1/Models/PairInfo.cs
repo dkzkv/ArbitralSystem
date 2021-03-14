@@ -12,7 +12,7 @@ namespace ArbitralSystem.PublicMarketInfoService.v1.Models
         /// <summary>
         /// Pair info system id.
         /// </summary>
-        public Guid Id { get; set; }
+        public int Id { get; set; }
 
         /// <summary>
         /// Exchange pair name.

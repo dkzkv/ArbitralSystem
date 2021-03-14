@@ -30,7 +30,16 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQPersistence.Repositories
                 .Include(o => o.Exchanges).ThenInclude(o => o.Exchange)
                 .FirstOrDefaultAsync(o => o.Id.Equals(id), token);
 
-            return _mapper.Map<MQDomain.Models.Distributor>(result);
+            try
+            {
+                return _mapper.Map<MQDomain.Models.Distributor>(result);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            
         }
 
         public async Task<MQDomain.Models.Distributor> CreateAsync(MQDomain.Models.Distributor distributor, CancellationToken token)

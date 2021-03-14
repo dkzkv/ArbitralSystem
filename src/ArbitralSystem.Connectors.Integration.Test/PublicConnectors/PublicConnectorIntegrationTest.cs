@@ -22,18 +22,8 @@ namespace ArbitralSystem.Connectors.Integration.Test.PublicConnectors
         [TestInitialize]
         public void Init()
         {
-            var connectionInfo = new ExchangeConnectionInfo
-            {
-                Exchange = Exchange.CoinEx,
-                BaseRestUrl = "https://api.coinex.com/"
-            };
-
-            IExchangeConnectionInfo[] connections = {connectionInfo};
-
-            var coinxConnector = new CoinExConnector(connections, new EmptyLogger());
-            
             var dtoConverter = new CryptoExchangeConverter();
-            _publicConnectorFactory = new CryptoExPublicConnectorFactory(coinxConnector,dtoConverter,new EmptyLogger());
+            _publicConnectorFactory = new CryptoExPublicConnectorFactory(dtoConverter,new EmptyLogger());
         }
 
         [DataTestMethod]
@@ -43,6 +33,8 @@ namespace ArbitralSystem.Connectors.Integration.Test.PublicConnectors
         [DataRow(Exchange.Kraken)]
         [DataRow(Exchange.Kucoin)]
         //[DataRow(Exchange.CoinEx)] Not supported 
+        //[DataRow(Exchange.Bitmex)] Not supported 
+        //[DataRow(Exchange.Bitfinex)]
         public async Task GetServerTimeTest(Exchange exchange)
         {
             //Arrange
@@ -59,11 +51,13 @@ namespace ArbitralSystem.Connectors.Integration.Test.PublicConnectors
 
         [DataTestMethod]
         [DataRow(Exchange.Binance)]
-        [DataRow(Exchange.Bittrex)]
+        /*[DataRow(Exchange.Bittrex)]
         [DataRow(Exchange.Huobi)]
         [DataRow(Exchange.Kraken)]
         [DataRow(Exchange.Kucoin)]
         [DataRow(Exchange.CoinEx)]
+        [DataRow(Exchange.Bitmex)]
+        [DataRow(Exchange.Bitfinex)]*/
         public async Task GetPairInfoTest(Exchange exchange)
         {
             //Arrange
@@ -91,6 +85,8 @@ namespace ArbitralSystem.Connectors.Integration.Test.PublicConnectors
         [DataRow(Exchange.Kraken)]
         [DataRow(Exchange.Kucoin)]
         [DataRow(Exchange.CoinEx)]
+        [DataRow(Exchange.Bitmex)]
+        [DataRow(Exchange.Bitfinex)]
         public async Task GetPairPricesTest(Exchange exchange)
         {
             //Arrange
@@ -101,6 +97,7 @@ namespace ArbitralSystem.Connectors.Integration.Test.PublicConnectors
 
             //Assert
             Assert.IsTrue(prices.Any(o=>o.Price != null));
+            Assert.IsTrue(prices.Any(o=>o.Exchange == exchange));
         }
     }
 }

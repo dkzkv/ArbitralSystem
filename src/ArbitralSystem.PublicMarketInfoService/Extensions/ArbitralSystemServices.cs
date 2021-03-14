@@ -23,11 +23,7 @@ namespace ArbitralSystem.PublicMarketInfoService.Extensions
         {
             services.AddMediatR(AppDomain.CurrentDomain.Load(DomainAssembly),
                 AppDomain.CurrentDomain.Load(PersistenceAssembly));
-
-            IExchangeConnectionInfo[] connectionInfoArray = {configuration.GetSection(SettingsNames.CoineExSection)
-                .Get<ExchangeConnectionInfo>()};
             
-            services.AddSingleton(connectionInfoArray);
             services.AddScoped<IDtoConverter, CryptoExchangeConverter>();
             services.AddScoped<ICoinExConnector, CoinExConnector>();
             services.AddScoped<IPublicConnectorFactory,CryptoExPublicConnectorFactory>();

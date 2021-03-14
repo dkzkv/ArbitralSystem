@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ArbitralSystem.Common.Validation;
-using ArbitralSystem.Connectors.Core.Arbitral;
+using ArbitralSystem.Connectors.ArbitralPublicMarketInfoConnector;
 using ArbitralSystem.Connectors.Core.Exceptions;
 using ArbitralSystem.Distributor.Core.Models;
 using ArbitralSystem.Domain.MarketInfo;

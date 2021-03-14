@@ -8,7 +8,7 @@ namespace ArbitralSystem.Storage.MarketInfoStorageService.Persistence.Mapping
         public PersistenceToDomain()
         {
             CreateMap<Entities.DistributorState, DistributerState>()
-                .ConstructUsing(o => new DistributerState(o.Symbol, o.Exchange, o.UtcChangedAt, o.PreviousStatus, o.CurrentStatus));
+                .ConstructUsing(o => new DistributerState(o.ClientPairId, o.UtcChangedAt, o.PreviousStatus, o.CurrentStatus));
         }
     }
 }

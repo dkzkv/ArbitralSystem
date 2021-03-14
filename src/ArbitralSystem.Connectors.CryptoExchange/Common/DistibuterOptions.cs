@@ -61,7 +61,7 @@ namespace ArbitralSystem.Connectors.CryptoExchange.Common
 
     public abstract class BaseDistributerOptions 
     {
-        public int Frequency { get; set; }
+        public int? Frequency { get; set; }
 
         public int? Limit { get; protected set; }
 

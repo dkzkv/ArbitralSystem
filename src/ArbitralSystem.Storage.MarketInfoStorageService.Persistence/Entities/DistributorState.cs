@@ -11,12 +11,11 @@ namespace ArbitralSystem.Storage.MarketInfoStorageService.Persistence.Entities
     public class DistributorState : IEntityTypeConfiguration<DistributorState>
     {
         public Int32 Id { get; set; }
-        public string Symbol { get; set;}
-        public Exchange Exchange { get; set;}
+        public int ClientPairId { get; set; }
         public DateTime UtcChangedAt { get; set; }
         public DistributerSyncStatus PreviousStatus { get; set; }
         public DistributerSyncStatus CurrentStatus { get; set;}
-        
+
         public void Configure(EntityTypeBuilder<DistributorState> builder)
         {
             builder.ToTable("DistributerStates")
@@ -24,13 +23,8 @@ namespace ArbitralSystem.Storage.MarketInfoStorageService.Persistence.Entities
 
             builder.Property(o => o.Id)
                 .UseIdentityColumn();
-            
-            builder.Property(o => o.Symbol)
-                .HasColumnType("varchar(32)")
-                .IsRequired();
-            
-            builder.Property(o => o.Exchange)
-                .HasColumnType("tinyint")
+
+            builder.Property(o => o.ClientPairId)
                 .IsRequired();
             
             builder.Property(o => o.PreviousStatus)

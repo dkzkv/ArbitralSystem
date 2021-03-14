@@ -5,7 +5,7 @@ namespace ArbitralSystem.Distributor.Core.Interfaces
 {
     public interface IOrderBookPublisher
     {
-        Task Publish(IOrderBook orderbook);
+        Task Publish(IDistributorOrderBook orderbook);
         Task Publish(IDistributerState orderBookState);
     }
 }

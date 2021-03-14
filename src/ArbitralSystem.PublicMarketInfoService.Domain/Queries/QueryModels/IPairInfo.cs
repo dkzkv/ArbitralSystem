@@ -6,7 +6,7 @@ namespace ArbitralSystem.PublicMarketInfoService.Domain.Queries.QueryModels
 
     public interface IPairInfo 
     {
-        Guid Id { get; }
+        int Id { get; }
         string ExchangePairName { get; }
         string UnificatedPairName { get; }
         string BaseCurrency { get; }

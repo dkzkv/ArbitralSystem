@@ -38,6 +38,8 @@ namespace ArbitralSystem.Connectors.Integration.Test.SingleOrderBookDistributer
         [DataRow(Exchange.Kraken,10)]
         [DataRow(Exchange.Kucoin,10)]
         [DataRow(Exchange.CoinEx,10)]
+        [DataRow(Exchange.Bitmex,10)]
+        [DataRow(Exchange.Bitfinex,10)]
         public async Task AllExchangesDistributerTest(Exchange exchange ,int countOfPairs)
         {
             var publicConnector = _connectorFactory.GetInstance(exchange);
@@ -50,9 +52,9 @@ namespace ArbitralSystem.Connectors.Integration.Test.SingleOrderBookDistributer
             var counter = 0;
             foreach (var pairInfo in workPairs)
             {
-                var orderbooks = new List<IOrderBook>();
+                var orderbooks = new List<IDistributorOrderBook>();
                 var distributer = _distributerFactory.GetInstance(exchange);
-                distributer.OrderBookChanged += delegate(IOrderBook orderBook) { orderbooks.Add(orderBook); };
+                distributer.OrderBookChanged += delegate(IDistributorOrderBook orderBook) { orderbooks.Add(orderBook); };
                 var tokenSource = new CancellationTokenSource(TimeBeforeCancelDistribution);
                 var orderBookPairInfo = new OrderBookPairInfo(exchange, pairInfo.ExchangePairName, pairInfo.UnificatedPairName);
                 var distrTask = await distributer.StartDistributionAsync(orderBookPairInfo, tokenSource.Token);
@@ -85,25 +87,14 @@ namespace ArbitralSystem.Connectors.Integration.Test.SingleOrderBookDistributer
         
         private IOrderBookDistributerFactory CreateDistributerFactory()
         {
-            var options = new DistributerOptions {Frequency = 100};
-            return  new CryptoExOrderBookDistributerFactory(options,
+            return  new CryptoExOrderBookDistributerFactory(
                 DtoConverter,
                 Logger);
         }
 
         private IPublicConnectorFactory CreateConnectorFactory()
         {
-            var connectionInfo = new ExchangeConnectionInfo
-            {
-                Exchange = Exchange.CoinEx,
-                BaseRestUrl = "https://api.coinex.com/"
-            };
-
-            IExchangeConnectionInfo[] connections = {connectionInfo};
-
-            var coinExConnector = new CoinExConnector(connections, new EmptyLogger());
-
-            return new CryptoExPublicConnectorFactory(coinExConnector, DtoConverter, new EmptyLogger());
+            return new CryptoExPublicConnectorFactory( DtoConverter, Logger);
         }
         
     }

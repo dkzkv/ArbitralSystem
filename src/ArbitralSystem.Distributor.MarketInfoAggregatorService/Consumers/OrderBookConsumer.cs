@@ -24,7 +24,7 @@ namespace ArbitralSystem.Distributor.MarketInfoAggregatorService.Consumers
         public Task Consume(ConsumeContext<IOrderBookMessage> context)
         {
             var orderBook = context.Message;
-            _logger.Debug($"Orderbook: {orderBook.Exchange}:{orderBook.Symbol} [{orderBook.Bids.Count()}/{orderBook.Asks.Count()}]");
+            _logger.Debug($"Orderbook: {orderBook.ClientPairId} [{orderBook.Bids.Count()}/{orderBook.Asks.Count()}]");
             _timeLimitedAggregator.Add(context.Message);
             return Task.CompletedTask;
         }

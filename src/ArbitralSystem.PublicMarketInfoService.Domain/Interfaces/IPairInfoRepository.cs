@@ -8,11 +8,11 @@ namespace ArbitralSystem.PublicMarketInfoService.Domain.Interfaces
 {
     public interface IPairInfoRepository
     {
-        Task<PairInfo> GetAsync(Guid id, CancellationToken cancellationToken);
+        Task<PairInfo> GetAsync(int id, CancellationToken cancellationToken);
         Task<PairInfo> CreateAsync(PairInfo pairInfo, CancellationToken cancellationToken);
         Task<IEnumerable<PairInfo>> CreateRangeAsync(PairInfo[] pairInfos, CancellationToken cancellationToken);
         Task UpdateAsync(PairInfo pairInfo, CancellationToken cancellationToken);
         Task UpdateRangeAsync(PairInfo[] pairInfos, CancellationToken cancellationToken);
-        Task DeleteAsync(Guid id, CancellationToken cancellationToken);
+        Task DeleteAsync(int id, CancellationToken cancellationToken);
     }
 }

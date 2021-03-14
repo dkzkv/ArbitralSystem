@@ -20,10 +20,10 @@ namespace ArbitralSystem.Connectors.Integration.Test.SingleOrderBookDistributer
         {
             var options = new BinanceDistributerOptions {Frequency = 100};
 
-            var orderbooks = new List<IOrderBook>();
+            var orderbooks = new List<IDistributorOrderBook>();
 
             var binanceDistributer = new BinanceOrderbookDistributor(options, DtoConverter, Logger);
-            binanceDistributer.OrderBookChanged += delegate(IOrderBook orderBook) { orderbooks.Add(orderBook); };
+            binanceDistributer.OrderBookChanged += delegate(IDistributorOrderBook orderBook) { orderbooks.Add(orderBook); };
             var tokenSource = new CancellationTokenSource(TimeBeforeCancelDistribution);
 
             var pairInfo = new PairInfo
@@ -73,10 +73,10 @@ namespace ArbitralSystem.Connectors.Integration.Test.SingleOrderBookDistributer
             };
             options.SetLimit(BinanceOrderBookLimit.limit_5);
 
-            var orderbooks = new List<IOrderBook>();
+            var orderbooks = new List<IDistributorOrderBook>();
 
             var binanceDistributer = new BinanceOrderbookDistributor(options, DtoConverter, Logger);
-            binanceDistributer.OrderBookChanged += delegate(IOrderBook orderBook) { orderbooks.Add(orderBook); };
+            binanceDistributer.OrderBookChanged += delegate(IDistributorOrderBook orderBook) { orderbooks.Add(orderBook); };
             var tokenSource = new CancellationTokenSource(TimeBeforeCancelDistribution);
 
             var pairInfo = new PairInfo
