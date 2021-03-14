@@ -24,7 +24,7 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQOrderBookDistributorService
             _publishEndpoint = publishEndpoint;
         }
         
-        public async Task Publish(IOrderBook orderbook)
+        public async Task Publish(IDistributorOrderBook orderbook)
         {
             try
             {

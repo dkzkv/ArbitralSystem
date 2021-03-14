@@ -6,7 +6,7 @@ using ArbitralSystem.Domain.MarketInfo;
 [assembly:InternalsVisibleTo("ArbitralSystem.Distributor.Core.Test")]
 namespace ArbitralSystem.Distributor.Core.Common
 {
-    internal class OrderBook : IOrderBook
+    internal class DistributorOrderBook : IDistributorOrderBook
     {
         public int? ClientPairId { get; }
         public Exchange Exchange { get; }
@@ -17,7 +17,7 @@ namespace ArbitralSystem.Distributor.Core.Common
         public IOrderbookEntry BestBid { get; }
         public IOrderbookEntry BestAsk { get; }
 
-        public OrderBook(Exchange exchange,
+        public DistributorOrderBook(Exchange exchange,
             string symbol,
             DateTimeOffset catchAt,
             IEnumerable<IOrderbookEntry> bids,

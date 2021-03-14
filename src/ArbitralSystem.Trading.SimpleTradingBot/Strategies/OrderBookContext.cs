@@ -5,15 +5,17 @@ namespace ArbitralSystem.Trading.SimpleTradingBot.Strategies
 {
     internal class OrderBookContext
     {
-        public OrderBookContext(IPairInfo pairInfo, IOrderBook orderBook, IPairCommission pairCommission)
+        public OrderBookContext(IPairInfo pairInfo, IDistributorOrderBook distributorOrderBook, IPairCommission pairCommission, BotBalance balance)
         {
             PairInfo = pairInfo;
-            OrderBook = orderBook;
+            DistributorOrderBook = distributorOrderBook;
             PairCommission = pairCommission;
+            Balance = balance;
         }
 
         public IPairInfo PairInfo { get; }
-        public IOrderBook OrderBook { get; }
+        public IDistributorOrderBook DistributorOrderBook { get; }
         public IPairCommission PairCommission { get; }
+        public BotBalance Balance { get; }
     }
 }

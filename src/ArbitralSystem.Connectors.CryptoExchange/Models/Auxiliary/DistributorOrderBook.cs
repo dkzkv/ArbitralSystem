@@ -1,16 +1,19 @@
+using System;
 using System.Collections.Generic;
 using ArbitralSystem.Connectors.Core.Models;
 using ArbitralSystem.Domain.MarketInfo;
 
 namespace ArbitralSystem.Connectors.CryptoExchange.Models
 {
-    internal class OrderBook : IOrderBook
+    internal class DistributorOrderBook : IDistributorOrderBook
     {
+        public int? ClientPairId { get; set; }
         public string Symbol { get; set; }
+        public DateTimeOffset CatchAt { get; set;}
         public IEnumerable<IOrderbookEntry> Bids { get; set; }
         public IEnumerable<IOrderbookEntry> Asks { get;set;  }
-        public IOrderbookEntry BestBid { get; set; }
-        public IOrderbookEntry BestAsk { get; set; }
+        public IOrderbookEntry BestBid { get;set;  }
+        public IOrderbookEntry BestAsk { get;set;  }
         public Exchange Exchange { get; set; }
     }
 }

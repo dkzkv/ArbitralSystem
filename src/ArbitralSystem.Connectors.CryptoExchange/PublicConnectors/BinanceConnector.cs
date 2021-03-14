@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,8 +9,10 @@ using ArbitralSystem.Connectors.Core.Models;
 using ArbitralSystem.Connectors.Core.PublicConnectors;
 using ArbitralSystem.Connectors.CryptoExchange.Models;
 using Binance.Net;
+using Binance.Net.Enums;
 using Binance.Net.Interfaces;
 using Binance.Net.Objects.Spot.MarketData;
+using Binance.Net.Objects.Spot.SpotData;
 using JetBrains.Annotations;
 
 [assembly: InternalsVisibleTo("ArbitralSystem.Connectors.Integration.Test.SingleOrderBookDistibuter")]
@@ -42,7 +45,7 @@ namespace ArbitralSystem.Connectors.CryptoExchange.PublicConnectors
         {
             var response = await _binanceClient.Spot.System.GetExchangeInfoAsync(ct);
             ValidateResponse(response);
-            return _converter.Convert<IEnumerable<BinanceSymbol>, IEnumerable<PairInfo>>(response.Data.Symbols);
+            return _converter.Convert<IEnumerable<BinanceSymbol>, IEnumerable<PairInfo>>(response.Data.Symbols.Where(o => o.Status == SymbolStatus.Trading));
         }
 
         public async Task<IEnumerable<IPairPrice>> GetPairPrices(CancellationToken ct)
@@ -50,6 +53,13 @@ namespace ArbitralSystem.Connectors.CryptoExchange.PublicConnectors
             var response = await _binanceClient.Spot.Market.GetAllPricesAsync(ct);
             ValidateResponse(response);
             return _converter.Convert<IEnumerable<BinancePrice>, IEnumerable<PairPrice>>(response.Data);
+        }
+
+        public async Task<IOrderBook> GetOrderBook(string symbol, CancellationToken ct)
+        {
+            var response = await _binanceClient.Spot.Market.GetOrderBookAsync(symbol, ct: ct);
+            ValidateResponse(response);
+            return _converter.Convert<BinanceOrderBook, OrderBook>(response.Data);
         }
     }
 }

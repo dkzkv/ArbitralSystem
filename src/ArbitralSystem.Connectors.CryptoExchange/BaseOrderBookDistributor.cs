@@ -155,9 +155,9 @@ namespace ArbitralSystem.Connectors.CryptoExchange
             instance.OrderBook.Dispose();
         }
 
-        private IOrderBook FillOrderBook(OrderBookDistributerInstance<TExchange> instance)
+        private IDistributorOrderBook FillOrderBook(OrderBookDistributerInstance<TExchange> instance)
         {
-            var orderBook = _converter.Convert<SymbolOrderBook, OrderBook>(instance.OrderBook);
+            var orderBook = _converter.Convert<SymbolOrderBook, DistributorOrderBook>(instance.OrderBook);
             orderBook.Symbol = instance.InstanceSymbol;
             orderBook.Exchange = Exchange;
             orderBook.ClientPairId = instance.ClientPairId;
@@ -194,9 +194,9 @@ namespace ArbitralSystem.Connectors.CryptoExchange
             remove => DistributerStatusHandler -= value;
         }
 
-        private void OnOrderBook(IOrderBook orderBook)
+        private void OnOrderBook(IDistributorOrderBook distributorOrderBook)
         {
-            OrderBookHandler?.Invoke(orderBook);
+            OrderBookHandler?.Invoke(distributorOrderBook);
         }
 
         private void OnStatusChanged(IDistributerState state)

@@ -26,7 +26,7 @@ namespace ArbitralSystem.Distributor.Core.Jobs
         private readonly ILogger _logger;
         private readonly IMapper _mapper;
 
-        private Func<IOrderBook, Task> _heartBeat;
+        private Func<IDistributorOrderBook, Task> _heartBeat;
 
 
         public OrderBookDistributorJob(IOrderBookDistributerFactory orderBookDistributer,
@@ -43,7 +43,7 @@ namespace ArbitralSystem.Distributor.Core.Jobs
             _mapper = mapper;
         }
 
-        public async Task Distribute(ExchangePairInfo exchangePairsInfo, Func<IOrderBook, Task> heartBeat, CancellationToken token)
+        public async Task Distribute(ExchangePairInfo exchangePairsInfo, Func<IDistributorOrderBook, Task> heartBeat, CancellationToken token)
         {
             _heartBeat = heartBeat;
             await Distribute(exchangePairsInfo, token);
@@ -84,15 +84,15 @@ namespace ArbitralSystem.Distributor.Core.Jobs
             }
         }
 
-        private async void Instance_OrderBookChanged(IOrderBook orderBook)
+        private async void Instance_OrderBookChanged(IDistributorOrderBook distributorOrderBook)
         {
             var currentOrderBook = _distributionOptions.TrimOrderBookDepth.HasValue
-                ? OrderbookTrimmer.Trim(orderBook, _distributionOptions.TrimOrderBookDepth.Value)
-                : orderBook;
+                ? OrderbookTrimmer.Trim(distributorOrderBook, _distributionOptions.TrimOrderBookDepth.Value)
+                : distributorOrderBook;
 
             await _publisher.Publish(currentOrderBook);
             if (_heartBeat != null)
-                await _heartBeat.Invoke(orderBook);
+                await _heartBeat.Invoke(distributorOrderBook);
             // _logger.Information(
             //   $"{counter++} Orderbook updated for pair {currentOrderBook.Symbol}, asks:{currentOrderBook.Asks.Count()}, bids:{currentOrderBook.Bids.Count()}, from {currentOrderBook.Exchange}");
         }

@@ -77,5 +77,10 @@ namespace ArbitralSystem.Connectors.CryptoExchange.PublicConnectors
             return _converter.Convert<IEnumerable<KeyValuePair<string, CoinExSymbolStateData>>,
                 IEnumerable<PairPrice>>(response.Data.Tickers.ToArray());
         }
+
+        public Task<IOrderBook> GetOrderBook(string symbol, CancellationToken ct = default(CancellationToken))
+        {
+            throw new NotImplementedException("CoinEx public order book");
+        }
     }
 }

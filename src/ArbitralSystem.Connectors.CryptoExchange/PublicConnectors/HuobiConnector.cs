@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ArbitralSystem.Common.Helpers;
@@ -40,7 +41,7 @@ namespace ArbitralSystem.Connectors.CryptoExchange.PublicConnectors
         {
             var response = await _huobiClient.GetSymbolsAsync(ct);
             ValidateResponse(response);
-            return _converter.Convert<IEnumerable<HuobiSymbol>, IEnumerable<PairInfo>>(response.Data);
+            return _converter.Convert<IEnumerable<HuobiSymbol>, IEnumerable<PairInfo>>(response.Data.Where(o=>o.State == HuobiSymbolState.Online));
         }
 
         async Task<IEnumerable<IPairPrice>> IPublicConnector.GetPairPrices(CancellationToken ct)
@@ -48,6 +49,13 @@ namespace ArbitralSystem.Connectors.CryptoExchange.PublicConnectors
             var response = await _huobiClient.GetTickersAsync(ct);
             ValidateResponse(response);
             return _converter.Convert<IEnumerable<HuobiSymbolTick>, IEnumerable<PairPrice>>(response.Data.Ticks);
+        }
+
+        public async Task<IOrderBook> GetOrderBook(string symbol, CancellationToken ct = default(CancellationToken))
+        {
+            var response = await _huobiClient.GetOrderBookAsync(symbol,0, ct: ct);
+            ValidateResponse(response);
+            return _converter.Convert<HuobiOrderBook, OrderBook>(response.Data);
         }
     }
 }

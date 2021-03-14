@@ -62,6 +62,12 @@ namespace ArbitralSystem.Connectors.CryptoExchange.PublicConnectors
             return _converter.Convert<IEnumerable<BitfinexSymbolOverview>, IEnumerable<IPairPrice>>(tickers.Data);
         }
 
+        public Task<IOrderBook> GetOrderBook(string symbol, CancellationToken ct = default(CancellationToken))
+        {
+            //TODO
+            throw new System.NotImplementedException("Bitfinex public orderbook");
+        }
+
         private IEnumerable<IPairInfo> PreparePairInfo(IEnumerable<(string RawBase, string RawQuote)> splitSymbols, IReduction[] reductions)
         {
             foreach (var splitSymbol in splitSymbols)

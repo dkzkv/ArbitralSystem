@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ArbitralSystem.Common.Helpers;
 using ArbitralSystem.Common.Logger;
 using ArbitralSystem.Common.Validation;
 using ArbitralSystem.Connectors.Core.Distributers;
@@ -24,22 +25,22 @@ namespace ArbitralSystem.Trading.SimpleTradingBot
         private readonly IOrderBookDistributerFactory _distributerFactory;
         private readonly IPublicConnectorFactory _publicConnectorFactory;
         private readonly IPrivateConnectorFactory _privateConnectorFactory;
-        private readonly ITradingStrategy _tradingStrategy;
+        private readonly IOrderGeneratorStrategy _orderGeneratorStrategy;
         private readonly SimpleBotSettings _botSettings;
         private readonly ILogger _logger;
 
         public SimpleTradingBotService(IOrderBookDistributerFactory orderBookDistributerFactory,
             IPublicConnectorFactory publicConnectorFactory,
             IPrivateConnectorFactory privateConnectorFactory,
-            ITradingStrategy tradingStrategy,
+            IOrderGeneratorStrategy orderGeneratorStrategy,
             SimpleBotSettings botSettings,
             ILogger logger)
         {
-            Preconditions.CheckNotNull(orderBookDistributerFactory, publicConnectorFactory, privateConnectorFactory, botSettings, logger);
+            Preconditions.CheckNotNull(orderBookDistributerFactory, publicConnectorFactory, privateConnectorFactory,orderGeneratorStrategy, botSettings, logger);
             _publicConnectorFactory = publicConnectorFactory;
             _distributerFactory = orderBookDistributerFactory;
             _privateConnectorFactory = privateConnectorFactory;
-            _tradingStrategy = tradingStrategy;
+            _orderGeneratorStrategy = orderGeneratorStrategy;
             _botSettings = botSettings;
             _logger = logger;
         }
@@ -53,17 +54,14 @@ namespace ArbitralSystem.Trading.SimpleTradingBot
             _firstPair = pairInfos.First(o => o.Exchange == _botSettings.FirstExchange);
             _secondPair = pairInfos.First(o => o.Exchange == _botSettings.SecondExchange);
 
-            await _tradingStrategy.InitializeAsync(_firstPair, _secondPair, token);
-
+            await _orderGeneratorStrategy.InitializeAsync(_firstPair, _secondPair, token);
+            
             _firstPrivateConnector = _privateConnectorFactory.GetInstance(_firstPair.Exchange);
             _secondPrivateConnector = _privateConnectorFactory.GetInstance(_secondPair.Exchange);
             
             _firstBotBalance = await GetFirstBotBalanceAsync();
             _secondBotBalance = await GetSecondBotBalanceAsync();
-
-            _firstPrivateConnector = _privateConnectorFactory.GetInstance(_firstPair.Exchange);
-            _secondPrivateConnector = _privateConnectorFactory.GetInstance(_secondPair.Exchange);
-
+            
             var firstDistributor = InitializeFirstDistributor(_firstPair.Exchange);
             var firstDistributorJob = await firstDistributor.StartDistributionAsync(
                 new OrderBookPairInfo(_firstPair.Exchange, _firstPair.ExchangePairName, _firstPair.UnificatedPairName), token);
@@ -77,10 +75,10 @@ namespace ArbitralSystem.Trading.SimpleTradingBot
 
         private CancellationTokenSource _mainCancellationTokenSource;
 
-        private IOrderBook _firstOrderBook;
+        private IDistributorOrderBook _firstDistributorOrderBook;
         private IDistributerState _firstDistributorState;
 
-        private IOrderBook _secondOrderBook;
+        private IDistributorOrderBook _secondDistributorOrderBook;
         private IDistributerState _secondDistributorState;
 
         private IPrivateConnector _firstPrivateConnector;
@@ -92,55 +90,73 @@ namespace ArbitralSystem.Trading.SimpleTradingBot
         private BotBalance _firstBotBalance;
         private BotBalance _secondBotBalance;
 
-        private static object _lockObj = new object();
+        private static SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 1);
         private bool _isStrategyExecuting;
 
-        private void SituationChanged()
+        private async Task SituationChanged()
         {
             if (IsFirstOrderBookReady() && IsSecondOrderBookReady())
             {
                 if (_isStrategyExecuting == false)
                 {
-                    lock (_lockObj)
+                    await _semaphoreSlim.WaitAsync();
+                    try
                     {
                         if (_isStrategyExecuting == false)
                         {
                             _isStrategyExecuting = true;
-                            if (_tradingStrategy.Execute(_firstOrderBook, _secondOrderBook, out var result))
+                            var orderGeneratorContext = new ExchangesContext(_firstBotBalance, _secondBotBalance,
+                                _firstDistributorOrderBook, _secondDistributorOrderBook);
+                            if (_orderGeneratorStrategy.Execute(orderGeneratorContext, out var generatedOrders))
                             {
-                                try
-                                {
-                                    var ordersResult = Task.WhenAll(_firstPrivateConnector.PlaceOrderAsync(result.FirstOrder),
-                                            _secondPrivateConnector.PlaceOrderAsync(result.SecondOrder))
-                                        .Result;
-
-                                    if (!IsBalanceIncreasedAndUpdate().Result)
-                                    {
-                                        _logger.Warning("Price decreased!");
-                                        _mainCancellationTokenSource.Cancel();
-                                        return;
-                                    }
-                                }
-                                catch (Exception e)
-                                {
-                                    _logger.Fatal(e, "Orders not executed: {@orders}", (result.FirstOrder, result.SecondOrder));
-                                    _mainCancellationTokenSource.Cancel();
-                                    return;
-                                }
+                                await RunTrading(generatedOrders);
                             }
 
                             _isStrategyExecuting = false;
                         }
                     }
+                    finally
+                    {
+                        _semaphoreSlim.Release();
+                    }
                 }
             }
         }
 
-        private bool IsFirstOrderBookReady() => _firstOrderBook != null && _firstDistributorState.CurrentStatus == DistributerSyncStatus.Synced
-                                                                        && (_firstOrderBook.BestBid.Price != 0 || _firstOrderBook.BestAsk.Price != 0);
+        private async Task RunTrading((IPlaceOrder FirstOrder, IPlaceOrder SecondOrder) generatedOrders)
+        {
+            try
+            {
+                await Task.WhenAll(_firstPrivateConnector.PlaceOrderAsync(generatedOrders.FirstOrder),
+                    _secondPrivateConnector.PlaceOrderAsync(generatedOrders.SecondOrder));
 
-        private bool IsSecondOrderBookReady() => _secondOrderBook != null && _secondDistributorState.CurrentStatus == DistributerSyncStatus.Synced
-                                                                          && (_secondOrderBook.BestBid.Price != 0 || _secondOrderBook.BestAsk.Price != 0);
+                var balances = await Task.WhenAll(GetFirstBotBalanceAsync(), GetSecondBotBalanceAsync());
+                var firstBalance = balances[0];
+                var secondBalance = balances[1];
+
+                if (!IsBalanceIncreased(firstBalance, secondBalance))
+                {
+                    _logger.Warning("Price decreased!");
+                    _mainCancellationTokenSource.Cancel();
+                    return;
+                }
+                UpdateBalance(firstBalance, secondBalance);
+                var percent = Calculator.ComputePercent(generatedOrders.FirstOrder.Price.Value, generatedOrders.SecondOrder.Price.Value);
+                _logger.Information(
+                    $"Percent: {percent:0.####}, Balance: 1: {_firstBotBalance.BaseBalance.Total:0.####}/{_firstBotBalance.QuoteBalance.Total:0.####}, 2: {_secondBotBalance.BaseBalance.Total:0.####}/{_secondBotBalance.QuoteBalance.Total:0.####}, T: {(firstBalance.BaseBalance.Total + secondBalance.BaseBalance.Total):0.####}/{(firstBalance.QuoteBalance.Total + secondBalance.QuoteBalance.Total):0.########}");
+            }
+            catch (Exception e)
+            {
+                _logger.Fatal(e, "Orders not executed: {@orders}", (generatedOrders.FirstOrder, generatedOrders.SecondOrder));
+                _mainCancellationTokenSource.Cancel();
+            }
+        }
+
+        private bool IsFirstOrderBookReady() => _firstDistributorOrderBook != null && _firstDistributorState.CurrentStatus == DistributerSyncStatus.Synced
+                                                                        && (_firstDistributorOrderBook.BestBid.Price != 0 || _firstDistributorOrderBook.BestAsk.Price != 0);
+
+        private bool IsSecondOrderBookReady() => _secondDistributorOrderBook != null && _secondDistributorState.CurrentStatus == DistributerSyncStatus.Synced
+                                                                          && (_secondDistributorOrderBook.BestBid.Price != 0 || _secondDistributorOrderBook.BestAsk.Price != 0);
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
@@ -148,23 +164,20 @@ namespace ArbitralSystem.Trading.SimpleTradingBot
             return Task.CompletedTask;
         }
 
-        private async Task<bool> IsBalanceIncreasedAndUpdate()
+        private void UpdateBalance(BotBalance firstCurrentBalance, BotBalance secondCurrentBalance)
         {
-            var firstCurrentBalance = await GetFirstBotBalanceAsync();
-            var secondCurrentBalance = await GetSecondBotBalanceAsync();
+            _firstBotBalance = firstCurrentBalance;
+            _secondBotBalance = secondCurrentBalance;
+        }
+
+        private bool IsBalanceIncreased(BotBalance firstCurrentBalance, BotBalance secondCurrentBalance)
+        {
             var totalBase = firstCurrentBalance.BaseBalance.Total + secondCurrentBalance.BaseBalance.Total;
             var totalQuote = firstCurrentBalance.QuoteBalance.Total + secondCurrentBalance.QuoteBalance.Total;
             var prevTotalBase = _firstBotBalance.BaseBalance.Total + _secondBotBalance.BaseBalance.Total;
             var prevTotalQuote = _firstBotBalance.QuoteBalance.Total + _secondBotBalance.QuoteBalance.Total;
 
-            _firstBotBalance = firstCurrentBalance;
-            _secondBotBalance = secondCurrentBalance;
-
-            var totalRezBase = _firstBotBalance.BaseBalance.Total + _secondBotBalance.BaseBalance.Total;
-            var totalRexQuote = _firstBotBalance.QuoteBalance.Total + _secondBotBalance.QuoteBalance.Total;
-            _logger.Verbose($"Balance: 1: {_firstBotBalance.BaseBalance.Total:0.####}/{_firstBotBalance.QuoteBalance.Total:0.####}, 2: {_secondBotBalance.BaseBalance.Total:0.####}/{_secondBotBalance.QuoteBalance.Total:0.####}, T: {totalRezBase:0.####}/{totalRexQuote:0.########}");
-            
-            return totalBase >= prevTotalBase && totalQuote >= prevTotalQuote;
+            return (totalBase >= prevTotalBase) && (totalQuote >= prevTotalQuote);
         }
 
         private async Task<IPairInfo> InitializePairInfo(Exchange exchange, string unificatedPairName, CancellationToken token)
@@ -184,16 +197,16 @@ namespace ArbitralSystem.Trading.SimpleTradingBot
         {
             _logger.Information($"Orderbook distributor initialization for {exchange} started.");
             var distributor = _distributerFactory.GetInstance(_botSettings.FirstExchange);
-            distributor.OrderBookChanged += book =>
+            distributor.OrderBookChanged += async book =>
             {
-                _firstOrderBook = book;
-                SituationChanged();
+                _firstDistributorOrderBook = book;
+                await SituationChanged();
             };
-            distributor.DistributerStateChanged += state =>
+            distributor.DistributerStateChanged += async state =>
             {
                 _firstDistributorState = state;
                 _logger.Debug($"State changed: {state.Exchange}, Current state: {state.CurrentStatus}");
-                SituationChanged();
+                await SituationChanged();
             };
             return distributor;
         }
@@ -201,17 +214,17 @@ namespace ArbitralSystem.Trading.SimpleTradingBot
         private IOrderbookDistributor InitializeSecondDistributor(Exchange exchange)
         {
             _logger.Information($"Orderbook distributor initialization for {exchange} started.");
-            var distributor = _distributerFactory.GetInstance(_botSettings.FirstExchange);
-            distributor.OrderBookChanged += book =>
+            var distributor = _distributerFactory.GetInstance(_botSettings.SecondExchange);
+            distributor.OrderBookChanged += async book =>
             {
-                _secondOrderBook = book;
-                SituationChanged();
+                _secondDistributorOrderBook = book;
+                await SituationChanged();
             };
-            distributor.DistributerStateChanged += state =>
+            distributor.DistributerStateChanged += async state =>
             {
                 _secondDistributorState = state;
                 _logger.Debug($"State changed: {state.Exchange}, Current state: {state.CurrentStatus}");
-                SituationChanged();
+                await SituationChanged();
             };
             return distributor;
         }

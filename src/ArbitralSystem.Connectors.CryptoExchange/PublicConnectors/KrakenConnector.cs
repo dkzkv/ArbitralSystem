@@ -53,5 +53,10 @@ namespace ArbitralSystem.Connectors.CryptoExchange.PublicConnectors
             ValidateResponse(response);
             return _converter.Convert<IEnumerable<KeyValuePair<string,KrakenRestTick>>, IEnumerable<PairPrice>>(response.Data);
         }
+
+        public Task<IOrderBook> GetOrderBook(string symbol, CancellationToken ct = default(CancellationToken))
+        {
+            throw new System.NotImplementedException("Kraken public order book");
+        }
     }
 }

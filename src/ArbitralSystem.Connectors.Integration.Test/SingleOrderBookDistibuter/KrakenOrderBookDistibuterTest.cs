@@ -22,10 +22,10 @@ namespace ArbitralSystem.Connectors.Integration.Test.SingleOrderBookDistributer
         {
             var options = new DistributerOptions {Frequency = 100};
 
-            var orderbooks = new List<IOrderBook>();
+            var orderbooks = new List<IDistributorOrderBook>();
 
             var distributer = new KrakenOrderbookDistributor(options, DtoConverter, Logger);
-            distributer.OrderBookChanged += delegate(IOrderBook orderBook) { orderbooks.Add(orderBook); };
+            distributer.OrderBookChanged += delegate(IDistributorOrderBook orderBook) { orderbooks.Add(orderBook); };
             var tokenSource = new CancellationTokenSource(TimeBeforeCancelDistribution);
 
             var pairInfo = new PairInfo
@@ -76,9 +76,9 @@ namespace ArbitralSystem.Connectors.Integration.Test.SingleOrderBookDistributer
             var counter = 0;
             foreach (var pairInfo in pairs)
             {
-                var orderbooks = new List<IOrderBook>();
+                var orderbooks = new List<IDistributorOrderBook>();
                 var distributer = new KrakenOrderbookDistributor(options, DtoConverter, Logger);
-                distributer.OrderBookChanged += delegate(IOrderBook orderBook) { orderbooks.Add(orderBook); };
+                distributer.OrderBookChanged += delegate(IDistributorOrderBook orderBook) { orderbooks.Add(orderBook); };
                 var tokenSource = new CancellationTokenSource(TimeBeforeCancelDistribution);
                 var orderBookPairInfo = new OrderBookPairInfo(Exchange.Kraken, pairInfo.ExchangePairName, pairInfo.UnificatedPairName);
                 var distrTask = await distributer.StartDistributionAsync(orderBookPairInfo, tokenSource.Token);

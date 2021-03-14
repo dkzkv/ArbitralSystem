@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using ArbitralSystem.Connectors.CoinEx.Models;
 using ArbitralSystem.Connectors.Core.Converters;
 using ArbitralSystem.Connectors.Core.Models;
@@ -9,6 +10,7 @@ using ArbitralSystem.Domain.Distributers;
 using ArbitralSystem.Domain.MarketInfo;
 using AutoMapper;
 using AutoMapper.Extensions.EnumMapping;
+using Binance.Net.Objects;
 using Binance.Net.Objects.Spot.MarketData;
 using Binance.Net.Objects.Spot.SpotData;
 using Bitfinex.Net.Objects;
@@ -47,11 +49,21 @@ namespace ArbitralSystem.Connectors.CryptoExchange.Converter
 
                 cfg.CreateMap<ISymbolOrderBookEntry, IOrderbookEntry>().As<OrderbookEntry>();
                 cfg.CreateMap<ISymbolOrderBookEntry, OrderbookEntry>();
-                cfg.CreateMap<SymbolOrderBook, OrderBook>()
+                cfg.CreateMap<SymbolOrderBook, DistributorOrderBook>()
                     .ForMember(destination => destination.CatchAt, o => o.MapFrom(source => source.LastOrderBookUpdate.ToUniversalTime())); // LastOrderBookUpdate is utc date
                     //.AfterMap((src, dest) => dest.TimeStamp = TimeHelper.DateTimeToTimeStamp(dest.DateTime));
 
                 #region Binance
+
+                cfg.CreateMap<BinanceOrderBookEntry, IOrderbookEntry>().As<OrderbookEntry>();;
+                cfg.CreateMap<BinanceOrderBookEntry, OrderbookEntry>();
+                
+                cfg.CreateMap<BinanceOrderBook, IOrderBook>().As<OrderBook>();;
+                cfg.CreateMap<BinanceOrderBook, OrderBook>()
+                    .ForMember(destination => destination.BestAsk, o => o.MapFrom(source => source.Asks.FirstOrDefault()))
+                    .ForMember(destination => destination.BestBid, o => o.MapFrom(source => source.Bids.FirstOrDefault()))
+                    .AfterMap((src, dest) => dest.Exchange = Exchange.Binance);
+                
                 cfg.CreateMap<BinanceSymbol, PairInfo>()
                     .ForMember(destination => destination.ExchangePairName, o => o.MapFrom(source => source.Name))
                     .ForMember(destination => destination.BaseCurrency, o => o.MapFrom(source => source.BaseAsset))
@@ -71,7 +83,6 @@ namespace ArbitralSystem.Connectors.CryptoExchange.Converter
                     .ForMember(destination => destination.MinMarketOrderValue, o => o.MapFrom(source => source.MinNotionalFilter.ApplyToMarketOrders ?
                         source.MinNotionalFilter.MinNotional : (decimal?)null))
                     .ForMember(destination => destination.MaxLimitOrderAmount, o => o.Ignore())
-                    
                     .AfterMap((src, dest) => dest.Exchange = Exchange.Binance);
                 
                 
@@ -128,6 +139,16 @@ namespace ArbitralSystem.Connectors.CryptoExchange.Converter
                 #endregion
 
                 #region Huobi
+                
+                cfg.CreateMap<HuobiOrderBookEntry, IOrderbookEntry>().As<OrderbookEntry>();;
+                cfg.CreateMap<HuobiOrderBookEntry, OrderbookEntry>();
+                
+                cfg.CreateMap<HuobiOrderBook, IOrderBook>().As<OrderBook>();;
+                cfg.CreateMap<HuobiOrderBook, OrderBook>()
+                    .ForMember(destination => destination.BestAsk, o => o.MapFrom(source => source.Asks.FirstOrDefault()))
+                    .ForMember(destination => destination.BestBid, o => o.MapFrom(source => source.Bids.FirstOrDefault()))
+                    .AfterMap((src, dest) => dest.Exchange = Exchange.Huobi);
+                
                 cfg.CreateMap<HuobiSymbol, PairInfo>()
                     .ForMember(destination => destination.ExchangePairName, o => o.MapFrom(source => source.Symbol))
                     

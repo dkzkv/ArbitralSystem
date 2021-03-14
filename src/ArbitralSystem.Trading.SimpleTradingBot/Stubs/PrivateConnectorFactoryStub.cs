@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ArbitralSystem.Common.Validation;
 using ArbitralSystem.Connectors.Core.Models.Trading;
 using ArbitralSystem.Connectors.Core.PrivateConnectors;
 using ArbitralSystem.Domain.MarketInfo;
+using ArbitralSystem.Trading.SimpleTradingBot.Settings;
+using ArbitralSystem.Trading.SimpleTradingBot.Stubs;
 
 namespace ArbitralSystem.Trading.SimpleTradingBot.Stubs
 {
@@ -13,13 +16,14 @@ namespace ArbitralSystem.Trading.SimpleTradingBot.Stubs
     {
         private readonly IPrivateConnector _binanceStub;
         private readonly IPrivateConnector _huobiStub;
-        
-        public PrivateConnectorFactoryStub()
+
+        public PrivateConnectorFactoryStub(SimpleBotSettings botSettings)
         {
-            _binanceStub = new PrivateBinanceConnectorStub();
-            _huobiStub = new PrivateHuobiConnectorStub();
+            Preconditions.CheckNotNull(botSettings);
+            _binanceStub = new PrivateBinanceConnectorStub(botSettings);
+            _huobiStub = new PrivateHuobiConnectorStub(botSettings);
         }
-        
+
         public IPrivateConnector GetInstance(Exchange exchange)
         {
             switch (exchange)
@@ -54,7 +58,7 @@ namespace ArbitralSystem.Trading.SimpleTradingBot.Stubs
         public decimal? Quantity { get; set; }
         public string ClientOrderId { get; set; }
     }
-    
+
     public class StubBalance : IBalance
     {
         public Exchange Exchange { get; set; }
@@ -62,34 +66,55 @@ namespace ArbitralSystem.Trading.SimpleTradingBot.Stubs
         public decimal Total { get; set; }
         public decimal Available { get; set; }
     }
-    
+
     public class StubException : Exception
     {
-        public StubException(string message) : base(message) { }
+        public StubException(string message) : base(message)
+        {
+        }
 
-        public StubException(string message, Exception inner) : base(message, inner) { }
+        public StubException(string message, Exception inner) : base(message, inner)
+        {
+        }
     }
 
-        public class PrivateHuobiConnectorStub : IPrivateConnector
+    public class BasePrivateConnectorStub
     {
-        private  StubBalance baseBalances;
-        private  StubBalance quoteBalances;
-
-        public PrivateHuobiConnectorStub()
+        public string BaseCurrency { get; }
+        public string QuoteCurrency { get; }
+        public BasePrivateConnectorStub(SimpleBotSettings botSettings)
         {
+            var splitPair = botSettings.UnificatedPairName.Split('/');
+            if(splitPair.Count() != 2)
+                throw new ArgumentException($"Invalid pair format: {botSettings.UnificatedPairName} {{Base}}/{{Quote}}, for stub private connector");
+            BaseCurrency = splitPair[0];
+            QuoteCurrency = splitPair[1];
+        }
+    }
+    
+    public class PrivateHuobiConnectorStub : BasePrivateConnectorStub , IPrivateConnector
+    {
+        private StubBalance baseBalances;
+        private StubBalance quoteBalances;
+
+        public PrivateHuobiConnectorStub(SimpleBotSettings botSettings) : base(botSettings)
+        {
+            if( botSettings.TestBalance is null)
+                 throw new ArgumentNullException("Base balance is null");
+            
             baseBalances = new StubBalance()
             {
                 Exchange = Exchange,
-                Available = 100,
-                Currency = "eth",
-                Total = 100
+                Available = botSettings.TestBalance.Base,
+                Currency = BaseCurrency.ToLower(),
+                Total = botSettings.TestBalance.Base
             };
             quoteBalances = new StubBalance()
             {
                 Exchange = Exchange,
-                Available = 100,
-                Currency = "btc",
-                Total = 100
+                Available = botSettings.TestBalance.Quote,
+                Currency = QuoteCurrency.ToLower(),
+                Total = botSettings.TestBalance.Quote
             };
         }
 
@@ -143,28 +168,30 @@ namespace ArbitralSystem.Trading.SimpleTradingBot.Stubs
             return Task.FromResult(balances);
         }
     }
-    
-    
-    public class PrivateBinanceConnectorStub : IPrivateConnector
-    {
-        private  StubBalance baseBalances;
-        private  StubBalance quoteBalances;
 
-        public PrivateBinanceConnectorStub()
+
+    public class PrivateBinanceConnectorStub : BasePrivateConnectorStub, IPrivateConnector
+    {
+        private StubBalance baseBalances;
+        private StubBalance quoteBalances;
+
+        public PrivateBinanceConnectorStub(SimpleBotSettings botSettings) : base(botSettings)
         {
+            if( botSettings.TestBalance is null)
+                throw new ArgumentNullException("Base balance is null");
             baseBalances = new StubBalance()
             {
                 Exchange = Exchange,
-                Available = 100,
-                Currency = "ETH",
-                Total = 100
+                Available = botSettings.TestBalance.Base,
+                Currency = BaseCurrency.ToUpper(),
+                Total = botSettings.TestBalance.Base
             };
             quoteBalances = new StubBalance()
             {
                 Exchange = Exchange,
-                Available = 100,
-                Currency = "BTC",
-                Total = 100
+                Available = botSettings.TestBalance.Quote,
+                Currency = QuoteCurrency.ToUpper(),
+                Total = botSettings.TestBalance.Quote
             };
         }
 

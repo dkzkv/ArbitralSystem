@@ -51,13 +51,13 @@ namespace ArbitralSystem.Connectors.Integration.Test.PublicConnectors
 
         [DataTestMethod]
         [DataRow(Exchange.Binance)]
-        [DataRow(Exchange.Bittrex)]
+        /*[DataRow(Exchange.Bittrex)]
         [DataRow(Exchange.Huobi)]
         [DataRow(Exchange.Kraken)]
         [DataRow(Exchange.Kucoin)]
         [DataRow(Exchange.CoinEx)]
         [DataRow(Exchange.Bitmex)]
-        [DataRow(Exchange.Bitfinex)]
+        [DataRow(Exchange.Bitfinex)]*/
         public async Task GetPairInfoTest(Exchange exchange)
         {
             //Arrange

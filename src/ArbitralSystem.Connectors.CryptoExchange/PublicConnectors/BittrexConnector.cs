@@ -56,5 +56,10 @@ namespace ArbitralSystem.Connectors.CryptoExchange.PublicConnectors
             ValidateResponse(response);
             return _converter.Convert<IEnumerable<BittrexSymbolSummary>, IEnumerable<PairPrice>>(response.Data);
         }
+
+        public Task<IOrderBook> GetOrderBook(string symbol, CancellationToken ct = default(CancellationToken))
+        {
+            throw new NotImplementedException("Bittrex public order book");
+        }
     }
 }

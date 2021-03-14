@@ -49,5 +49,10 @@ namespace ArbitralSystem.Connectors.CryptoExchange.PublicConnectors
             ValidateResponse(response);
             return _converter.Convert<IEnumerable<KucoinAllTick>, IEnumerable<PairPrice>>(response.Data.Data);
         }
+
+        public Task<IOrderBook> GetOrderBook(string symbol, CancellationToken ct = default(CancellationToken))
+        {
+            throw new System.NotImplementedException("Kucoin public order book");
+        }
     }
 }

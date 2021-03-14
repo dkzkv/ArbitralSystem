@@ -48,5 +48,10 @@ namespace ArbitralSystem.Connectors.CryptoExchange.PublicConnectors
             ValidateResponse(response);
             return _converter.Convert<IEnumerable<Instrument>, IEnumerable<PairPrice>>(response.Data);
         }
+
+        public Task<IOrderBook> GetOrderBook(string symbol, CancellationToken ct = default(CancellationToken))
+        {
+            throw new NotImplementedException("BitMex public order book");
+        }
     }
 }

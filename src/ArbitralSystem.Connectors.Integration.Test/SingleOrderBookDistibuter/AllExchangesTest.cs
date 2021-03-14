@@ -52,9 +52,9 @@ namespace ArbitralSystem.Connectors.Integration.Test.SingleOrderBookDistributer
             var counter = 0;
             foreach (var pairInfo in workPairs)
             {
-                var orderbooks = new List<IOrderBook>();
+                var orderbooks = new List<IDistributorOrderBook>();
                 var distributer = _distributerFactory.GetInstance(exchange);
-                distributer.OrderBookChanged += delegate(IOrderBook orderBook) { orderbooks.Add(orderBook); };
+                distributer.OrderBookChanged += delegate(IDistributorOrderBook orderBook) { orderbooks.Add(orderBook); };
                 var tokenSource = new CancellationTokenSource(TimeBeforeCancelDistribution);
                 var orderBookPairInfo = new OrderBookPairInfo(exchange, pairInfo.ExchangePairName, pairInfo.UnificatedPairName);
                 var distrTask = await distributer.StartDistributionAsync(orderBookPairInfo, tokenSource.Token);

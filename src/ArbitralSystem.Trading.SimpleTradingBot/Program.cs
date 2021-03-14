@@ -24,7 +24,7 @@ namespace ArbitralSystem.Trading.SimpleTradingBot
     {
         private static readonly string EnvironmentBuildName = Environment.GetEnvironmentVariable("BUILD_ENVIRONMENT");
         private static readonly string ApplicationName = "SimpleTradingBot";
-        
+
         static async Task Main(string[] args)
         {
             var configuration = new ConfigurationBuilder()
@@ -36,7 +36,7 @@ namespace ArbitralSystem.Trading.SimpleTradingBot
 
             var loggerWrapper = new LoggerFactory(configuration).GetInstance();
             loggerWrapper = loggerWrapper.ForContext("Application", ApplicationName);
-            
+
             try
             {
                 await SimpleTradingBotService(configuration, loggerWrapper);
@@ -62,12 +62,13 @@ namespace ArbitralSystem.Trading.SimpleTradingBot
             var connectivity = configuration.GetSection("ExchangeConnectivity")
                 .Get<ExchangeConnectivity[]>()
                 .ToArray<IPrivateExchangeSettings>();
-            
+
             var strategySettings = configuration.GetSection("StrategySettings")
                 .Get<StrategySettings>();
             var botSettings = configuration.GetSection("BotSettings")
                 .Get<SimpleBotSettings>();
-            
+
+            loggerWrapper.Information("Bot settings : {@botSettings}",botSettings);
             var hostBuilder = new HostBuilder()
                 .ConfigureAppConfiguration((hostContext, configApp) => { configApp.AddConfiguration(configuration); })
                 .ConfigureServices((hostContext, services) =>
@@ -77,21 +78,25 @@ namespace ArbitralSystem.Trading.SimpleTradingBot
                     services.AddSingleton(botSettings);
                     services.AddSingleton(strategySettings);
                     services.AddSingleton<IDtoConverter>(new CryptoExchangeConverter());
-                    
-                    services.AddTransient<ITradingStrategy,SimpleMarket>();
+
+                    services.AddSingleton<IOrderGeneratorStrategy, SimpleMarketGenerator>();
                     services.AddTransient<IPublicConnectorFactory, CryptoExPublicConnectorFactory>();
                     services.AddTransient<IOrderBookDistributerFactory>(provider => new CryptoExOrderBookDistributerFactory(
                         provider.GetService<IDtoConverter>(),
                         provider.GetService<ILogger>()));
                     services.AddTransient<IAccountConnectorFactory, CryptoExAccountConnectorFactory>();
-                    services.AddTransient<IPrivateConnectorFactory,PrivateConnectorFactoryStub>();
                     
+                    if (botSettings.IsTestMode)
+                        services.AddTransient<IPrivateConnectorFactory, PrivateConnectorFactoryStub>();
+                    else
+                        services.AddTransient<IPrivateConnectorFactory, CryptoExPrivateConnectorFactory>();
+
+
                     services.AddHostedService<SimpleTradingBotService>();
                 })
                 .UseConsoleLifetime();
 
             await hostBuilder.RunConsoleAsync();
         }
-        
     }
 }

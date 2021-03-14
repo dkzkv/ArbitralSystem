@@ -7,9 +7,9 @@ using ArbitralSystem.Trading.SimpleTradingBot.Common;
 
 namespace ArbitralSystem.Trading.SimpleTradingBot.Strategies
 {
-    public interface ITradingStrategy
+    public interface IOrderGeneratorStrategy
     {
         Task InitializeAsync(IPairInfo firstPairInfo, IPairInfo secondPairInfo, CancellationToken token);
-        bool Execute(IOrderBook first, IOrderBook second, out (IPlaceOrder FirstOrder, IPlaceOrder SecondOrder) result);
+        bool Execute(ExchangesContext generatorContext, out (IPlaceOrder FirstOrder, IPlaceOrder SecondOrder) result);
     }
 }
