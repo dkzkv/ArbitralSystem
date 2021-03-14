@@ -13,6 +13,7 @@ using Binance.Net.Enums;
 using Binance.Net.Interfaces;
 using Binance.Net.Objects.Spot.MarketData;
 using Binance.Net.Objects.Spot.SpotData;
+using CryptoExchange.Net.Objects;
 using JetBrains.Annotations;
 
 [assembly: InternalsVisibleTo("ArbitralSystem.Connectors.Integration.Test.SingleOrderBookDistibuter")]
@@ -50,7 +51,7 @@ namespace ArbitralSystem.Connectors.CryptoExchange.PublicConnectors
 
         public async Task<IEnumerable<IPairPrice>> GetPairPrices(CancellationToken ct)
         {
-            var response = await _binanceClient.Spot.Market.GetAllPricesAsync(ct);
+            var response = await _binanceClient.Spot.Market.GetPricesAsync(ct);
             ValidateResponse(response);
             return _converter.Convert<IEnumerable<BinancePrice>, IEnumerable<PairPrice>>(response.Data);
         }
