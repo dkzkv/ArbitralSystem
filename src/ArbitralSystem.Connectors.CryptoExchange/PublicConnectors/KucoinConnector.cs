@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ArbitralSystem.Common.Helpers;
@@ -40,7 +41,7 @@ namespace ArbitralSystem.Connectors.CryptoExchange.PublicConnectors
         {
             var response = await _kucoinClient.GetSymbolsAsync(ct:ct);
             ValidateResponse(response);
-            return _converter.Convert<IEnumerable<KucoinSymbol>, IEnumerable<PairInfo>>(response.Data);
+            return _converter.Convert<IEnumerable<KucoinSymbol>, IEnumerable<PairInfo>>(response.Data.Where(o=>o.EnableTrading));
         }
 
         async Task<IEnumerable<IPairPrice>> IPublicConnector.GetPairPrices(CancellationToken ct)

@@ -87,8 +87,7 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQDomain
                 if (server.IsDeleted)
                     _logger.Warning("Distributor linked to disabled server!");
 
-                existedDistributor.SetServer(server)
-                    .UpdateStatus(Status.Processing);
+                existedDistributor.SetServer(server).UpdateStatus(Status.Processing);
             }
             else
             {

@@ -11,6 +11,7 @@ using ArbitralSystem.Connectors.Core.PrivateConnectors;
 using ArbitralSystem.Connectors.CryptoExchange.Models.Auxiliary;
 using ArbitralSystem.Connectors.CryptoExchange.PublicConnectors;
 using ArbitralSystem.Domain.MarketInfo;
+using CryptoExchange.Net.Objects;
 using Huobi.Net;
 using Huobi.Net.Interfaces;
 using Huobi.Net.Objects;
@@ -48,13 +49,31 @@ namespace ArbitralSystem.Connectors.CryptoExchange.PrivateConnectors
             else
                 throw new NotSupportedException($"Not supported order type: {placeOrder.OrderType} for Exchange: {Exchange}");
 
-            var placedOrderResult = await _huobiClient.PlaceOrderAsync(_accountId,
-                placeOrder.ExchangePairName,
-                huobiOrderType,
-                placeOrder.Quantity ?? throw new ArgumentNullException($"Quantity for limit order should not be null, for Exchange: {Exchange}"),
-                price: placeOrder.Price ?? throw new ArgumentNullException($"Price for limit order should not be null, for Exchange: {Exchange}"),
-                clientOrderId: placeOrder.ClientOrderId,
-                ct: token);
+            WebCallResult<long> placedOrderResult;
+
+            switch (placeOrder.OrderType)
+            {
+                case OrderType.Limit:
+                    placedOrderResult = await _huobiClient.PlaceOrderAsync(_accountId,
+                        placeOrder.ExchangePairName,
+                        huobiOrderType,
+                        placeOrder.Quantity ?? throw new ArgumentNullException($"Quantity for limit order should not be null, for Exchange: {Exchange}"),
+                        price: placeOrder.Price ?? throw new ArgumentNullException($"Price for limit order should not be null, for Exchange: {Exchange}"),
+                        clientOrderId: placeOrder.ClientOrderId,
+                        ct: token);
+                    break;
+                case OrderType.Market:
+                    placedOrderResult = await _huobiClient.PlaceOrderAsync(_accountId,
+                        placeOrder.ExchangePairName,
+                        huobiOrderType,
+                        placeOrder.Quantity ?? throw new ArgumentNullException($"Quantity for limit order should not be null, for Exchange: {Exchange}"),
+                        clientOrderId: placeOrder.ClientOrderId,
+                        ct: token);
+                    break;
+                default:
+                    throw new ArgumentException($"Invalid order type {placeOrder.OrderType}, for Exchange: {Exchange}");
+            }
+            
             ValidateResponse(placedOrderResult);
             return placedOrderResult.Data.ToString();
         }

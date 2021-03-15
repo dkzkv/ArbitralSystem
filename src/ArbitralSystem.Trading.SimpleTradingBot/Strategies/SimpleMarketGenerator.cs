@@ -40,9 +40,6 @@ namespace ArbitralSystem.Trading.SimpleTradingBot.Strategies
             _strategySettings = strategySettings;
             _logger = logger;
         }
-
-        private int _clientOrderIdCounter;
-
         private IPairInfo _firstPair;
         private IPairInfo _secondPair;
 
@@ -141,19 +138,19 @@ namespace ArbitralSystem.Trading.SimpleTradingBot.Strategies
             if (!IsValidMarketQuantity(quantity, ctx1.PairInfo, ctx2.PairInfo, ctx1.DistributorOrderBook, ctx2.DistributorOrderBook))
                 return false;
 
+            var clientOrderGuid = Guid.NewGuid().ToString();
             if (_botSettings.IsTestMode)
             {
                 firstOrder = new StubMarketOrder(ctx1.PairInfo.Exchange, ctx1.PairInfo.ExchangePairName, OrderSide.Sell, ctx1.DistributorOrderBook.BestBid.Price, quantity,
-                    GetClientId(_clientOrderIdCounter));
+                    GetClientId(clientOrderGuid));
                 secondOrder = new StubMarketOrder(ctx2.PairInfo.Exchange, ctx2.PairInfo.ExchangePairName, OrderSide.Buy, ctx2.DistributorOrderBook.BestAsk.Price, quantity,
-                    GetClientId(_clientOrderIdCounter));
+                    GetClientId(clientOrderGuid));
             }
             else
             {
-                firstOrder = new MarketOrder(ctx1.PairInfo.ExchangePairName, OrderSide.Sell, quantity, GetClientId(_clientOrderIdCounter), ctx1.PairInfo.Exchange);
-                secondOrder = new MarketOrder(ctx2.PairInfo.ExchangePairName, OrderSide.Buy, quantity, GetClientId(_clientOrderIdCounter), ctx2.PairInfo.Exchange);
+                firstOrder = new MarketOrder(ctx1.PairInfo.ExchangePairName, OrderSide.Sell, quantity, GetClientId(clientOrderGuid), ctx1.PairInfo.Exchange);
+                secondOrder = new MarketOrder(ctx2.PairInfo.ExchangePairName, OrderSide.Buy, quantity, GetClientId(clientOrderGuid), ctx2.PairInfo.Exchange);
             }
-            _clientOrderIdCounter++;
             return true;
         }
 
@@ -165,7 +162,7 @@ namespace ArbitralSystem.Trading.SimpleTradingBot.Strategies
             return minExchangeQuantity > _strategySettings.TradeOrderQuantity ? _strategySettings.TradeOrderQuantity : minExchangeQuantity;
         }
 
-        private string GetClientId(int clientOrderCounter) => $"simple_trading_bot_{clientOrderCounter}";
+        private string GetClientId(string clientOrderId) => $"SPI_{clientOrderId}";
 
         private bool IsOverThreshold(decimal percent, IPairCommission first, IPairCommission second)
         {

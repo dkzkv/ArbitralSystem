@@ -127,6 +127,7 @@ namespace ArbitralSystem.Trading.SimpleTradingBot
         {
             try
             {
+                _logger.Information("Send orders: {@generatedOrders}",generatedOrders);
                 await Task.WhenAll(_firstPrivateConnector.PlaceOrderAsync(generatedOrders.FirstOrder),
                     _secondPrivateConnector.PlaceOrderAsync(generatedOrders.SecondOrder));
 

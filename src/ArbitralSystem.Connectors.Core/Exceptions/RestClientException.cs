@@ -7,5 +7,6 @@ namespace ArbitralSystem.Connectors.Core.Exceptions
         public RestClientException(string message) : base(message) { }
 
         public RestClientException(string message, Exception inner) : base(message, inner) { }
+
     }
 }
