@@ -179,7 +179,7 @@ select
     ,[Price]
 
     ,[Quantity] as Volume
-    ,OrderSide as [Direction]
+    ,CAST(OrderSide as int) as [Direction]
 
     ,[UtcCatchAt] as [Timestamp]
 from [dbo].[OrderbookPriceEntries] as o
