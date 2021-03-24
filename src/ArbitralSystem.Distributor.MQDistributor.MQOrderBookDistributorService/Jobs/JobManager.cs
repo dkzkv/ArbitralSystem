@@ -123,7 +123,6 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQOrderBookDistributorService
         {
             if (_serverIdentifier.HasValue)
             {
-                await _publishEndpoint.Publish(new ServerDeletedMessage(_serverIdentifier.Value));
                 await CancelAll();
             }
 
