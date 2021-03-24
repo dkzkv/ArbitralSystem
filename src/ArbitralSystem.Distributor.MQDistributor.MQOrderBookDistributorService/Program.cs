@@ -9,6 +9,7 @@ using ArbitralSystem.Connectors.Core.Distributers;
 using ArbitralSystem.Connectors.CryptoExchange;
 using ArbitralSystem.Connectors.CryptoExchange.Common;
 using ArbitralSystem.Connectors.CryptoExchange.Converter;
+using ArbitralSystem.Distributor.Core;
 using ArbitralSystem.Distributor.Core.Common;
 using ArbitralSystem.Distributor.Core.Interfaces;
 using ArbitralSystem.Distributor.Core.Jobs;
@@ -108,7 +109,7 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQOrderBookDistributorService
                     services.AddSingleton(configuration);
                     services.AddSingleton(distributerOptions);
                     services.AddSingleton(distributionOptions);
-
+                    
                     services.AddSingleton<JobManager>();
                     services.AddTransient<OrderBookDistributorJob>();
                     services.AddTransient<IOrderBookPublisher, OrderBookPublisher>();
@@ -125,6 +126,7 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQOrderBookDistributorService
                         
                         x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
                         {
+                            cfg.Host(new Uri(mqOptions.Host), h => { });
                             // RoundRobin
                             cfg.ReceiveEndpoint(Constants.Queues.MQOrderBookDistributorPrefix, e =>
                             {

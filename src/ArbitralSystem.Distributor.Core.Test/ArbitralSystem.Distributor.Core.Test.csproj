@@ -16,6 +16,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\ArbitralSystem.Distributor.Core\ArbitralSystem.Distributor.Core.csproj" />
+      <ProjectReference Include="..\ArbitralSystem.Test\ArbitralSystem.Test.csproj" />
     </ItemGroup>
 
 </Project>

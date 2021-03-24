@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ using ArbitralSystem.Trading.SimpleTradingBot.Settings;
 using ArbitralSystem.Trading.SimpleTradingBot.Strategies;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Hosting;
+using ServiceStack.Text;
 
 namespace ArbitralSystem.Trading.SimpleTradingBot
 {
@@ -55,7 +57,6 @@ namespace ArbitralSystem.Trading.SimpleTradingBot
             _secondPair = pairInfos.First(o => o.Exchange == _botSettings.SecondExchange);
 
             await _orderGeneratorStrategy.InitializeAsync(_firstPair, _secondPair, token);
-            
             _firstPrivateConnector = _privateConnectorFactory.GetInstance(_firstPair.Exchange);
             _secondPrivateConnector = _privateConnectorFactory.GetInstance(_secondPair.Exchange);
             

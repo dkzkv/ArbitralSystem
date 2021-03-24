@@ -16,6 +16,7 @@ using ArbitralSystem.Trading.SimpleTradingBot.Common.Exceptions;
 using ArbitralSystem.Trading.SimpleTradingBot.Settings;
 using ArbitralSystem.Trading.SimpleTradingBot.Stubs;
 using JetBrains.Annotations;
+using ServiceStack.Text;
 
 namespace ArbitralSystem.Trading.SimpleTradingBot.Strategies
 {
@@ -48,6 +49,7 @@ namespace ArbitralSystem.Trading.SimpleTradingBot.Strategies
 
         private bool _isInitialized;
 
+        private string _clientOrderIdPrefix;
         public async Task InitializeAsync(IPairInfo firstPairInfo, IPairInfo secondPairInfo, CancellationToken token)
         {
             var pairCommissions = await Task.WhenAll(InitializePairCommission(firstPairInfo, token),
@@ -63,6 +65,7 @@ namespace ArbitralSystem.Trading.SimpleTradingBot.Strategies
             var secondOrderBook = await _publicConnectorFactory.GetInstance(_secondPair.Exchange).GetOrderBook(_secondPair.ExchangePairName, token);
 
             LogAffordableQuantitySets(_strategySettings.TradeOrderQuantity, firstPairInfo, secondPairInfo, firstOrderBook, secondOrderBook);
+            _clientOrderIdPrefix = $"SPI{_firstPair.UnificatedPairName.Replace("/",String.Empty)}";
             _isInitialized = true;
         }
 
@@ -138,7 +141,7 @@ namespace ArbitralSystem.Trading.SimpleTradingBot.Strategies
             if (!IsValidMarketQuantity(quantity, ctx1.PairInfo, ctx2.PairInfo, ctx1.DistributorOrderBook, ctx2.DistributorOrderBook))
                 return false;
 
-            var clientOrderGuid = Guid.NewGuid().ToString();
+            var clientOrderGuid = DateTime.Now.ToUnixTime().ToString();
             if (_botSettings.IsTestMode)
             {
                 firstOrder = new StubMarketOrder(ctx1.PairInfo.Exchange, ctx1.PairInfo.ExchangePairName, OrderSide.Sell, ctx1.DistributorOrderBook.BestBid.Price, quantity,
@@ -162,7 +165,7 @@ namespace ArbitralSystem.Trading.SimpleTradingBot.Strategies
             return minExchangeQuantity > _strategySettings.TradeOrderQuantity ? _strategySettings.TradeOrderQuantity : minExchangeQuantity;
         }
 
-        private string GetClientId(string clientOrderId) => $"SPI_{clientOrderId}";
+        private string GetClientId(string clientOrderId) => _clientOrderIdPrefix + clientOrderId;
 
         private bool IsOverThreshold(decimal percent, IPairCommission first, IPairCommission second)
         {

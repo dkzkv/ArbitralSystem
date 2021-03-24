@@ -28,7 +28,7 @@ namespace ArbitralSystem.PublicMarketInfoService
             var loggerWrapper = new ArbitralSystem.Common.Logger.LoggerFactory(configuration).GetInstance();
             Log.Logger = loggerWrapper.GetRootLogger() as Serilog.ILogger;
             loggerWrapper = loggerWrapper.ForContext("Application", ApplicationName);
-
+            
             try
             {
                 CreateHostBuilder(configuration, loggerWrapper).Build().Run();

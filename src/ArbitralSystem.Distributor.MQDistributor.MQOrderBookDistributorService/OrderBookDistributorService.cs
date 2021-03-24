@@ -33,9 +33,17 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQOrderBookDistributorService
         public async Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.Information("Cancellation started.");
-            await _jobManager.DisposeAsync();
+            
+            await _jobManager.DiActivateManager(cancellationToken, false);
+            _logger.Information("Server diActivated without cancellation jobs.");
+            
             await _busControl.StopAsync(cancellationToken);
-            _logger.Information("Messaging and service stopped.");
+            _logger.Information("Messaging stopped.");
+            
+            await _jobManager.DisposeAsync();
+            _logger.Information("Job manager disposed.");
+            
+            _logger.Information("Service stopped.");
         }
 
     }

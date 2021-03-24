@@ -88,13 +88,14 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQOrderBookDistributorService
             }
         }
 
-        public async Task CancelAll()
+        public async Task CancelAll(bool isSilentCancellation = true)
         {
             IsManagerActivated();
             foreach (var jobInfo in _jobCancelManager)
             {
                 jobInfo.Value.Cancel();
-                await NotifyDistributorDiActivated(jobInfo.Key);
+                if(!isSilentCancellation)
+                    await NotifyDistributorDiActivated(jobInfo.Key);
             }
         }
 
@@ -108,6 +109,16 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQOrderBookDistributorService
             });
         }
 
+        public async Task DiActivateManager(CancellationToken token, bool diActivateWithCancellation = true)
+        {
+            if (_serverIdentifier.HasValue)
+            {
+                await _publishEndpoint.Publish(new ServerDeletedMessage(_serverIdentifier.Value),token);
+                if(diActivateWithCancellation)
+                    await CancelAll(false);
+            }
+        }
+
         public async ValueTask DisposeAsync()
         {
             if (_serverIdentifier.HasValue)
@@ -118,8 +129,8 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQOrderBookDistributorService
 
             _heartBeatTimer?.Dispose();
             _serverIdentifier = null;
-            _jobCancelManager.Clear();
-            _heartBeatHistory.Clear();
+            _jobCancelManager?.Clear();
+            _heartBeatHistory?.Clear();
         }
 
         private void IsManagerActivated()

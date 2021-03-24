@@ -28,7 +28,6 @@ namespace ArbitralSystem.Distributor.Core.Jobs
 
         private Func<IDistributorOrderBook, Task> _heartBeat;
 
-
         public OrderBookDistributorJob(IOrderBookDistributerFactory orderBookDistributer,
             DistributionOptions distributionOptions,
             IOrderBookPublisher publisher,
@@ -90,11 +89,12 @@ namespace ArbitralSystem.Distributor.Core.Jobs
                 ? OrderbookTrimmer.Trim(distributorOrderBook, _distributionOptions.TrimOrderBookDepth.Value)
                 : distributorOrderBook;
 
+
             await _publisher.Publish(currentOrderBook);
             if (_heartBeat != null)
-                await _heartBeat.Invoke(distributorOrderBook);
-            // _logger.Information(
-            //   $"{counter++} Orderbook updated for pair {currentOrderBook.Symbol}, asks:{currentOrderBook.Asks.Count()}, bids:{currentOrderBook.Bids.Count()}, from {currentOrderBook.Exchange}");
+                await _heartBeat.Invoke(currentOrderBook);
+            _logger.Debug(
+                $"Orderbook updated for pair {currentOrderBook.Symbol}, asks:{currentOrderBook.Asks.Count()}, bids:{currentOrderBook.Bids.Count()}, from {currentOrderBook.Exchange}");
         }
 
         private async void Instance_DistributerStateChanged(IDistributerState state)
@@ -136,11 +136,12 @@ namespace ArbitralSystem.Distributor.Core.Jobs
                         })
                     .ExecuteAsync(async () => await distributor.StartDistributionAsync(distributerPair, token));
 
-                activeDistributers.Add(distributerTask); 
+                activeDistributers.Add(distributerTask);
             }
+
             await Task.WhenAll(activeDistributers);
         }
-        
+
         private void UnSubscribeFromDistributers(List<IOrderbookDistributor> distributers)
         {
             foreach (var distributer in distributers)
