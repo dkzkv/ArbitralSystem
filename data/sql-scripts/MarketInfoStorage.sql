@@ -30,8 +30,41 @@ EXEC sp_addrolemember @rolename = N'db_executor', @membername = N'mlbot'
 go
 
 
+CREATE USER dkazakov FOR LOGIN dkazakov WITH DEFAULT_SCHEMA=[dbo]
+GO
+
+EXEC sp_addrolemember @rolename = N'db_owner', @membername = N'dkazakov'
+go
+
 
 -- # Tables ----
+
+CREATE TABLE [dbo].[PairInfos](
+	[Id] [int] NOT NULL,
+	[ExchangePairName] [varchar](32) NOT NULL,
+	[UnificatedPairName] [varchar](32) NOT NULL,
+	[BaseCurrency] [varchar](16) NOT NULL,
+	[QuoteCurrency] [varchar](16) NOT NULL,
+	[UtcCreatedAt] [smalldatetime] NOT NULL,
+	[UtcDelistedAt] [smalldatetime] NULL,
+	[Exchange] [tinyint] NOT NULL
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[PairInfos] ADD  CONSTRAINT [PK_PairInfos] PRIMARY KEY CLUSTERED 
+([Id] ASC)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF) ON [PRIMARY]
+GO
+
+CREATE UNIQUE NONCLUSTERED INDEX [IX_PairInfos_ExchangePairName_Exchange_UtcDelistedAt] ON [dbo].[PairInfos]
+(
+	[ExchangePairName] ASC,
+	[Exchange] ASC,
+	[UtcDelistedAt] ASC
+)
+WHERE ([ExchangePairName] IS NOT NULL AND [UtcDelistedAt] IS NOT NULL)
+WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+GO
+
 
 create table [dbo].[OrderbookPriceEntries](
     [Symbol] [varchar](16) NOT NULL,
@@ -41,18 +74,33 @@ create table [dbo].[OrderbookPriceEntries](
     [Direction] [tinyint] NOT NULL,
     [UtcCatchAt] [datetime2](7) NOT NULL
 ) on [PRIMARY]
-
 go
 
 CREATE CLUSTERED COLUMNSTORE INDEX [CCI-OrderbookPriceEntries] ON [dbo].[OrderbookPriceEntries] 
 WITH (DROP_EXISTING = OFF, COMPRESSION_DELAY = 0, DATA_COMPRESSION = COLUMNSTORE) ON [PRIMARY]
 go
 
+ALTER TABLE OrderbookPriceEntries
+ADD FOREIGN KEY (ClientPairId) REFERENCES PairInfos(Id);
+go
+
+
+CREATE TABLE [dbo].[DistributerStates](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[ClientPairId] [int] NOT NULL,
+	[UtcChangedAt] [datetime2](7) NOT NULL,
+	[PreviousStatus] [tinyint] NOT NULL,
+	[CurrentStatus] [tinyint] NOT NULL
+) ON [PRIMARY]
+GO
 
 CREATE CLUSTERED COLUMNSTORE INDEX [CCI-DistributerStates] ON [dbo].[DistributerStates] 
 WITH (DROP_EXISTING = OFF, COMPRESSION_DELAY = 0, DATA_COMPRESSION = COLUMNSTORE) ON [PRIMARY]
 go
 
+ALTER TABLE DistributerStates
+ADD FOREIGN KEY (ClientPairId) REFERENCES PairInfos(Id);
+GO
 
 
 -- # Views ----
@@ -63,14 +111,15 @@ go
 create view [dbo].[orderbook_timestamps_vw] 
 as
 select 
-    [Symbol]
+    pi.UnificatedPairName as symbol
     ,min([UtcCatchAt]) as first_orderbook_timestamp
     ,max([UtcCatchAt]) as last_orderbook_timestamp
     ,count(distinct(Exchange)) as exchanges_n
     ,count(*) as quotes_n
-from [dbo].[OrderbookPriceEntries]
+from [dbo].[OrderbookPriceEntries] as o
+inner join dbo.PairInfos as pi ON o.ClientPairId = pi.Id
 where [UtcCatchAt] > DATEADD(DAY, -30, GETDATE())
-group by [Symbol]
+group by pi.UnificatedPairName
 
 go
 
@@ -81,13 +130,16 @@ go
 create view [dbo].[current_month_trades_stats] 
 as
 select 
-    min([UtcCatchAt]) as start_time
+	pi.UnificatedPairName
+    ,min([UtcCatchAt]) as start_time
     ,max([UtcCatchAt]) as end_time
     ,count(*) as N
-from [dbo].[OrderbookPriceEntries]
-group by YEAR([UtcCatchAt]), MONTH([UtcCatchAt]), DAY([UtcCatchAt])
+from [dbo].[OrderbookPriceEntries] as o
+inner join dbo.PairInfos as pi ON o.ClientPairId = pi.Id
+group by pi.UnificatedPairName, YEAR([UtcCatchAt]), MONTH([UtcCatchAt]), DAY([UtcCatchAt])
 
 go
+
 
 
 drop view [dbo].[last_orderbooks_vw] 
@@ -95,40 +147,45 @@ go
 
 create view [dbo].[last_orderbooks_vw] 
 as
-select 
-    [Exchange]
-    ,[Symbol]
-    ,[Price]
-    
-    ,[Quantity] as Volume
-    ,[Direction]
-    
-    ,[UtcCatchAt] as [Timestamp]
+select ClientPairId
+      ,[Price]
+      
+      ,[Quantity] as Volume
+      ,Orderside as [Direction]
+      
+      ,[UtcCatchAt] as [Timestamp]
 from [dbo].[OrderbookPriceEntries]
 where [UtcCatchAt] > DATEADD(DAY, -7, GETDATE())
 
 go
 
 
+select * from [dbo].[current_month_trades_stats] 
+
+
+
 -- # Programming ----
+drop procedure [dbo].[get_orderbook_sp]
+go 
 
 create procedure [dbo].[get_orderbook_sp]
-    @symbol varchar(16)
+    @symbol varchar(32) 
     ,@fromTime datetime
     ,@toTime datetime
 as
 select 
-    [Exchange]
-    ,[Symbol]
+    UnificatedPairName as Symbol
+	,Exchange
     ,[Price]
 
     ,[Quantity] as Volume
-    ,[Direction]
+    ,CAST(OrderSide as int) as [Direction]
 
     ,[UtcCatchAt] as [Timestamp]
-from [dbo].[OrderbookPriceEntries]
+from [dbo].[OrderbookPriceEntries] as o
+inner join dbo.PairInfos as pi on pi.Id = o.ClientPairId
 where 
-    [Symbol] = @symbol
+    UnificatedPairName = @symbol
     and [UtcCatchAt] >= @fromTime
     and [UtcCatchAt] <= @toTime
 ;
@@ -136,21 +193,25 @@ where
 go  
 
 
+drop procedure [dbo].[get_bot_statuses_history_sp]
+go
+
 create procedure [dbo].[get_bot_statuses_history_sp]
-    @symbol varchar(16)
-    ,@fromTime datetime
-    ,@toTime datetime
+    @symbol varchar(32) 
+    , @fromTime datetime
+    , @toTime datetime
 as   
-    select
-      [Exchange]
-      ,[Symbol]
+    select 
+      ds.[Id]
+	  ,UnificatedPairName as Symbol
+	  ,Exchange
       ,[CurrentStatus] as [Status]
       ,[UtcChangedAt] as [Timestamp]
-    from [dbo].[DistributerStates]
+    from [dbo].[DistributerStates] as ds
+	inner join dbo.PairInfos as pi on pi.Id = ds.ClientPairId
     where 
-        [Symbol] = @symbol
+        UnificatedPairName = @symbol
         and [UtcChangedAt] >= @fromTime
         and [UtcChangedAt] <= @toTime
-;
-    
+;    
 go
