@@ -1,6 +1,7 @@
 using System.Linq;
 using ArbitralSystem.Distributor.MQDistributor.MQDomain.Queries.QueryModels;
 using ArbitralSystem.Distributor.MQDistributor.MQManagerService.v1.Models;
+using ArbitralSystem.Distributor.MQDistributor.MQManagerService.v1.Models.LookUps;
 using ArbitralSystem.Distributor.MQDistributor.MQManagerService.v1.Models.Paging;
 using AutoMapper;
 using Status = ArbitralSystem.Distributor.MQDistributor.MQDomain.Common.Status;
@@ -36,6 +37,15 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQManagerService.Mapping
             
             CreateMap<IServer, FullServerResult>()
                 .IncludeAllDerived();
+
+            CreateMap<ArbitralSystem.Distributor.MQDistributor.MQDomain.Common.ServerType, ServerTypeInfo>()
+                .ForMember(dest => dest.Id, o => o.MapFrom(src => src))
+                .ForMember(dest => dest.Name, o => o.MapFrom(src => src.ToString()));
+            
+            CreateMap<Status, StatusInfo>()
+                .ForMember(dest => dest.Id, o => o.MapFrom(src => src))
+                .ForMember(dest => dest.Name, o => o.MapFrom(src => src.ToString()));
+
         }
     }
 }

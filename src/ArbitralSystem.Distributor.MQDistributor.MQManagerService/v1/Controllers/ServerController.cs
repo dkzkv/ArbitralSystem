@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ArbitralSystem.Distributor.MQDistributor.MQDomain.Common;
 using ArbitralSystem.Distributor.MQDistributor.MQDomain.Queries.Server;
 using ArbitralSystem.Distributor.MQDistributor.MQManagerService.v1.Models;
+using ArbitralSystem.Distributor.MQDistributor.MQManagerService.v1.Models.LookUps;
 using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -36,6 +40,37 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQManagerService.v1.Controlle
             var query = new ServerQuery(_mapper.Map<MQDomain.Queries.QueryModels.ServerFilter>(filter));
             var result = await _mediator.Send(query, cancellationToken);
             return Ok(_mapper.Map<Models.Paging.Page<ShortServerResult>>(result));
+        }
+        
+        
+        /// <summary>
+        /// Get server types
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        [HttpGet("types")]
+        public IActionResult GetTypes([FromQuery] QueryFilter filter)
+        {
+            var exp = ServerTypeHelper.GetAll();
+            if (!string.IsNullOrEmpty(filter.Query))
+                exp = exp.Where(o => o.ToString().ToLower().Contains(filter.Query.ToLower()));
+            var types =  _mapper.Map<IEnumerable<ServerTypeInfo>>(exp);
+            return Ok(types);
+        }
+        
+        /// <summary>
+        /// Get server types
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        [HttpGet("statuses")]
+        public IActionResult GetStatuses([FromQuery] QueryFilter filter)
+        {
+            var exp = StatusHelper.GetAll();
+            if (!string.IsNullOrEmpty(filter.Query))
+                exp = exp.Where(o => o.ToString().ToLower().Contains(filter.Query.ToLower()));
+            var statuses =  _mapper.Map<IEnumerable<StatusInfo>>(exp);
+            return Ok(statuses);
         }
         
         /// <summary>

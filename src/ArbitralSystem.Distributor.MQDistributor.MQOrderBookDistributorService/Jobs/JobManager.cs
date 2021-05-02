@@ -163,9 +163,18 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQOrderBookDistributorService
                     DistributorId = o.Key.DistributorId,
                     Exchange = o.Key.Exchange
                 }).ToArray();
-                
+
                 if (_serverIdentifier.HasValue && heartBeats.Any())
-                    await _publishEndpoint.Publish(new HeartBeatOrderBookDistributorMessage(heartBeats));
+                {
+                    try
+                    {
+                        await _publishEndpoint.Publish(new HeartBeatOrderBookDistributorMessage(heartBeats));
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.Warning(e,"Error while sending heartbeat.");
+                    }
+                }
             }
         }
 

@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using System.Linq;
+using ArbitralSystem.Domain.MarketInfo;
 using ArbitralSystem.PublicMarketInfoService.Domain.Queries.QueryModels;
 using ArbitralSystem.PublicMarketInfoService.v1.Models;
 using ArbitralSystem.PublicMarketInfoService.v1.Models.Paging;
@@ -17,6 +17,10 @@ namespace ArbitralSystem.PublicMarketInfoService.Mapping
             
             CreateMap<IPairInfoPolygon, PairInfoPolygon>()
                 .ForMember(destination => destination.UnificatedPairs, o => o.MapFrom(source => source.PolygonPairs.Select(o=>o.UnificatedPairName)));
+            
+            CreateMap<Exchange, ExchangeInfo>()
+                .ForMember(dest => dest.Name, o => o.MapFrom(src => src.ToString()))
+                .ForMember(dest => dest.Id, o => o.MapFrom(src => src));
         }
     }
 }

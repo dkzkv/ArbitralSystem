@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Timers;
 using ArbitralSystem.Common.Logger;
@@ -6,33 +7,33 @@ using ArbitralSystem.Distributor.MarketInfoAggregatorService.Common;
 
 namespace ArbitralSystem.Distributor.MarketInfoAggregatorService.Services
 {
-    public class TimeLimitedAggregatorStack<T> : ITimeLimitedAggregator<T> where T : class
+    public class TimeLimitedAggregator<T> : ITimeLimitedAggregator<T> where T : class
     {
         private readonly AggregatorOptions _options;
         private readonly ILogger _logger;
 
-        private ConcurrentStack<T> _bag;
+        private List<T> _bag;
         private Timer _timer;
 
-        public TimeLimitedAggregatorStack(AggregatorOptions options,
+        public TimeLimitedAggregator(AggregatorOptions options,
             ILogger logger)
         {
             _options = options;
             _logger = logger;
-            _bag = new ConcurrentStack<T>();
+            _bag = new List<T>(options.Limit);
+            _timer = new Timer(_options.TimeBaseCleansing.TotalMilliseconds);
         }
 
         private object _lockObj = new object();
 
         public void StartTimer()
         {
-            _timer = new Timer(_options.TimeBaseCleansing.TotalMilliseconds);
             _timer.Elapsed += _timer_Elapsed;
         }
 
         public void StopTimer()
         {
-            _timer?.Stop();
+            _timer.Stop();
         }
 
 
@@ -58,7 +59,7 @@ namespace ArbitralSystem.Distributor.MarketInfoAggregatorService.Services
             {
                 lock (_lockObj)
                 {
-                    _bag.PushRange(objs);
+                    _bag.AddRange(objs);
                     _logger.Verbose($"Message package: {objs.Count()} added to bag: {_bag.Count()}:{_options.Limit}");
                     if (_bag.Count >= _options.Limit)
                     {
@@ -89,8 +90,8 @@ namespace ArbitralSystem.Distributor.MarketInfoAggregatorService.Services
 
         private void ResetTimer()
         {
-            _timer?.Stop();
-            _timer?.Start();
+            _timer.Stop();
+            _timer.Start();
         }
 
         private event AggregateCollectionFilledDelegate<T> AggregateCollectionFilledHandler;
@@ -109,8 +110,11 @@ namespace ArbitralSystem.Distributor.MarketInfoAggregatorService.Services
         public void Dispose()
         {
             lock (_lockObj)
-                _timer?.Stop();
-
+            {
+                _timer.Stop();
+                _timer.Dispose();
+            }
+            
             _bag.Clear();
         }
     }

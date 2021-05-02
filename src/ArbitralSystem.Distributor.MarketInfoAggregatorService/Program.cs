@@ -94,7 +94,7 @@ namespace ArbitralSystem.Distributor.MarketInfoAggregatorService
 
                     services
                         .AddSingleton<ITimeLimitedAggregator<IOrderBookMessage>,
-                            TimeLimitedAggregatorStack<IOrderBookMessage>>();
+                            TimeLimitedAggregator<IOrderBookMessage>>();
 
                     services.AddMassTransit(x =>
                     {
