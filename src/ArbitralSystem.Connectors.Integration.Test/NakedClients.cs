@@ -75,29 +75,6 @@ namespace ArbitralSystem.Connectors.Integration.Test
         [TestMethod]
         public void TestClients()
         {
-            /*GetSymbolsResponse symbolsData = _huobiCommonClient.GetSymbolsAsync().Result;
-            var symbols = symbolsData.data.Where(o => o.apiTrading == "enabled").Select(o => o.symbol).Take(10);
-            var allSymbols = string.Join(',', symbols);
-            var request = new GetRequest()
-                .AddParam("symbols", allSymbols);
-            var a = _huobiOrderClient.GetTransactFeeRateAsync(request).Result;
-
-            var request1 = new GetRequest()
-                .AddParam("currency", "btc");
-
-            GetWithdrawQuotaResponse result = _huobiWalletClient.GetWithdrawQuotaAsync(request1).Result;
-            var currencysResponse = _huobiCommonClient.GetCurrencyAsync("btc", false).Result*/
-            ;
-            
-            //var symbols = _huobiClient.GetSymbols();
-            //withdrow свой клиент
-
-            var exInfo = _binanceClient.Spot.System.GetExchangeInfo();
-            var accInfo = _binanceClient.General.GetAccountInfo();
-            var coins = _binanceClient.General.GetUserCoins();
-            ;
-            //var accStatus = _binanceClient.General.GetAccountStatus();
-            // var accTrStatus = _binanceClient.General.GetTradingStatus();
         }
     }
 }

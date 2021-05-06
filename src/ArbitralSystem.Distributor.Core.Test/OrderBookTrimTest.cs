@@ -28,6 +28,7 @@ namespace ArbitralSystem.Distributor.Core.Test
         [DataRow(3, 3, 3, 3, 3)]
         [DataRow(3, 0, 0, 0, 0)]
         [DataRow(3, 2, 2, 2, 2)]
+        [DataRow(3, 0, 0, 0, 0)]
         public void OrderBookTrimTest(int trimLimit, int asksCount, int bidsCount, int expectedAsksCount, int expectedBidsCount)
         {
             var asks = _fixture.CreateMany<IOrderbookEntry>(asksCount);

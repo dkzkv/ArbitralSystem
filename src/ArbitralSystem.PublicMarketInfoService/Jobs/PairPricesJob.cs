@@ -13,19 +13,21 @@ namespace ArbitralSystem.PublicMarketInfoService.Jobs
     [UsedImplicitly]
     internal class PairPricesJob
     {
+        private readonly AvailableExchangesProvider _exchangesProvider;
         private readonly IMediator _mediator;
         private readonly ILogger _logger;
 
-        public PairPricesJob(ILogger logger, IMediator mediator)
+        public PairPricesJob(AvailableExchangesProvider exchangesProvider,ILogger logger, IMediator mediator)
         {
-            Preconditions.CheckNotNull(mediator, logger);
+            Preconditions.CheckNotNull(exchangesProvider,mediator, logger);
+            _exchangesProvider = exchangesProvider;
             _logger = logger;
             _mediator = mediator;
         }
 
         public async Task Execute()
         {
-            await _mediator.Send(new SaveLastPairPricesCommand(ExchangeHelper.GetAll()));
+            await _mediator.Send(new SaveLastPairPricesCommand(_exchangesProvider.Get()));
         }
     }
 }

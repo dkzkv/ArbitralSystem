@@ -56,6 +56,13 @@ namespace ArbitralSystem.Storage.MarketInfoStorageService.Persistence.Repositori
             var orderBookEntries = new ConcurrentBag<OrderbookPriceEntry>();
             foreach (var orderBook in orderBooks)
             {
+                if (!orderBook.Asks.Any() && !orderBook.Bids.Any())
+                {
+                    orderBookEntries.Add(FillEmptyBuyOrderbookPriceEntry(orderBook));
+                    orderBookEntries.Add(FillEmptySellOrderbookPriceEntry(orderBook));
+                    continue;
+                }
+
                 var askTask = Task.Run(() =>
                 {
                     foreach (var ask in orderBook.Asks)
@@ -69,7 +76,6 @@ namespace ArbitralSystem.Storage.MarketInfoStorageService.Persistence.Repositori
                 });
                 await Task.WhenAll(askTask, bidTask);
             }
-
             return orderBookEntries;
         }
 
@@ -82,6 +88,30 @@ namespace ArbitralSystem.Storage.MarketInfoStorageService.Persistence.Repositori
                 OrderSide = orderSide,
                 Price = entry.Price,
                 Quantity = entry.Quantity,
+            };
+        }
+
+        private OrderbookPriceEntry FillEmptyBuyOrderbookPriceEntry(OrderBook orderBook)
+        {
+            return new OrderbookPriceEntry()
+            {
+                ClientPairId = orderBook.ClientPairId,
+                OrderSide = OrderSide.Buy,
+                Price = 0,
+                Quantity = 0,
+                UtcCatchAt = orderBook.CatchAt.UtcDateTime,
+            };
+        }
+
+        private OrderbookPriceEntry FillEmptySellOrderbookPriceEntry(OrderBook orderBook)
+        {
+            return new OrderbookPriceEntry()
+            {
+                ClientPairId = orderBook.ClientPairId,
+                OrderSide = OrderSide.Sell,
+                Price = 0,
+                Quantity = 0,
+                UtcCatchAt = orderBook.CatchAt.UtcDateTime,
             };
         }
     }

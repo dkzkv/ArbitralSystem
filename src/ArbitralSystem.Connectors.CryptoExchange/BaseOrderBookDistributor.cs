@@ -98,14 +98,18 @@ namespace ArbitralSystem.Connectors.CryptoExchange
         
         private void OrderBookOnOnOrderBookUpdate((IEnumerable<ISymbolOrderBookEntry> Bids, IEnumerable<ISymbolOrderBookEntry> Asks) obj)
         {
-            var orderBook = FillOrderBook(_orderBookDistributerInstance);
-            OnOrderBook(orderBook);
+            if (TryFillOrderBook(_orderBookDistributerInstance, out var firstOrderBook))
+            {
+                OnOrderBook(firstOrderBook);
+            }
         }
 
         private void WatchOnOrderBook(OrderBookDistributerInstance<TExchange> instance)
         {
-            var firstOrderBook = FillOrderBook(instance);
-            OnOrderBook(firstOrderBook);
+            if (TryFillOrderBook(instance, out var firstOrderBook))
+            {
+                OnOrderBook(firstOrderBook);
+            }
             
             var updateNumber = instance.OrderBook.LastSequenceNumber;
             var updateTime = DateTimeOffset.Now;
@@ -123,9 +127,11 @@ namespace ArbitralSystem.Connectors.CryptoExchange
                             {
                                 _logger.Warning($"Empty orderbook received.");
                             }
-                        
-                            var orderBook = FillOrderBook(instance);
-                            OnOrderBook(orderBook);
+
+                            if (TryFillOrderBook(instance, out var orderBook))
+                            {
+                                OnOrderBook(orderBook);
+                            }
                         }
                         updateNumber = instance.OrderBook.LastSequenceNumber;
                     }
@@ -145,7 +151,7 @@ namespace ArbitralSystem.Connectors.CryptoExchange
                 }
                 catch (Exception ex)
                 {
-                    _logger.Fatal(ex, "STRANGE ANOMALY while watching on orderbook changes");
+                    _logger.Fatal(ex, $"STRANGE ANOMALY while watching on orderbook {instance.InstanceSymbol} changes. Pair id: {instance.ClientPairId}");
                 }
             }
 
@@ -155,13 +161,20 @@ namespace ArbitralSystem.Connectors.CryptoExchange
             instance.OrderBook.Dispose();
         }
 
-        private IDistributorOrderBook FillOrderBook(OrderBookDistributerInstance<TExchange> instance)
+        private bool TryFillOrderBook(OrderBookDistributerInstance<TExchange> instance, out DistributorOrderBook orderBook)
         {
-            var orderBook = _converter.Convert<SymbolOrderBook, DistributorOrderBook>(instance.OrderBook);
+            orderBook = new DistributorOrderBook();
+            if (instance.OrderBook is null)
+            {
+                _logger.Warning("Instance orderbook is null.");
+                return false;
+            }
+            
+            orderBook = _converter.Convert<SymbolOrderBook, DistributorOrderBook>(instance.OrderBook);
             orderBook.Symbol = instance.InstanceSymbol;
             orderBook.Exchange = Exchange;
             orderBook.ClientPairId = instance.ClientPairId;
-            return orderBook;
+            return true;
         }
 
         private void SubscribeEvents(TExchange orderBook)

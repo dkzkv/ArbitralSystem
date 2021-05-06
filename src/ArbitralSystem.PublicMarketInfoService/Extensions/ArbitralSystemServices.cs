@@ -5,6 +5,7 @@ using ArbitralSystem.Connectors.Core.Converters;
 using ArbitralSystem.Connectors.Core.PublicConnectors;
 using ArbitralSystem.Connectors.CryptoExchange;
 using ArbitralSystem.Connectors.CryptoExchange.Converter;
+using ArbitralSystem.Domain.MarketInfo;
 using ArbitralSystem.PublicMarketInfoService.Domain.Interfaces;
 using ArbitralSystem.PublicMarketInfoService.Domain.Services;
 using ArbitralSystem.PublicMarketInfoService.Persistence.Repositories;
@@ -30,6 +31,13 @@ namespace ArbitralSystem.PublicMarketInfoService.Extensions
             
             services.AddScoped<IPairPricesRepository, PairPricesRepository>();
             services.AddScoped<IPairInfoRepository, PairInfoBaseRepository>();
+            
+            services.AddSingleton(new AvailableExchangesProvider(GetAvailableExchanges(configuration)));
+        }
+
+        private static Exchange[] GetAvailableExchanges(IConfiguration configuration)
+        {
+            return configuration.GetSection(SettingsNames.AvailableExchanges).Get<Exchange[]>();
         }
     }
 }

@@ -10,6 +10,7 @@ using ArbitralSystem.Connectors.CryptoExchange.PrivateConnectors;
 using ArbitralSystem.Domain.MarketInfo;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using ServiceStack.Text;
 
 namespace ArbitralSystem.Connectors.Integration.Test.TradingConnectors
 {
@@ -40,19 +41,20 @@ namespace ArbitralSystem.Connectors.Integration.Test.TradingConnectors
             var orders = await _privateConnector.PlaceOrderAsync(order);
         }
 
-        #region Igored, related to balance
+        #region Ingored, related to balance
 
-         [Ignore]
+       // [Ignore]
         [TestMethod]
         public async Task Check_PlaceOrder_Market_Method()
         {
             //Arrange
-            const string symbol = "VETBTC";
-            const string clientOrderId = "Check_PlaceOrder_Market_Method";
+            const string symbol = "IOTABTC";
+            var id = DateTime.Now.ToUnixTime().ToString();
+            string clientOrderId = $"SPIIOTABTC{id}";
 
             var order = new MarketOrder(symbol,
                 OrderSide.Sell,
-                124m,
+                5m,
                 clientOrderId,
                 Exchange.Binance);
 

@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using ArbitralSystem.Domain.MarketInfo;
 using ArbitralSystem.PublicMarketInfoService.Common.Auth;
 using ArbitralSystem.PublicMarketInfoService.Extensions;
 using ArbitralSystem.PublicMarketInfoService.Persistence;
@@ -22,6 +23,20 @@ using Serilog;
 
 namespace ArbitralSystem.PublicMarketInfoService
 {
+    internal class AvailableExchangesProvider
+    {
+        private readonly Exchange[] _exchanges;
+        public AvailableExchangesProvider(Exchange[] exchanges)
+        {
+            _exchanges = exchanges;
+        }
+        
+        public Exchange[] Get()
+        {
+            return _exchanges;
+        }
+    }
+    
     [UsedImplicitly]
     internal class Startup
     {
@@ -77,7 +92,7 @@ namespace ArbitralSystem.PublicMarketInfoService
                 Authorization = new[] {new HangFireAuthorizationFilter()}
             });
             app.UseHangfireServer();
-
+            
             if(_configuration[SettingsNames.PairInfosCron] is var pairInfoCron &&  !string.IsNullOrEmpty(pairInfoCron))
                 RecurringJob.AddOrUpdate<PairInfoUpdaterJob>("Pair-info-update", x => x.Execute(), pairInfoCron);
             

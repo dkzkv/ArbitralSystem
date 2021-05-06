@@ -14,17 +14,12 @@
     <PackageReference Include="MSTest.TestAdapter" Version="2.0.0" />
     <PackageReference Include="MSTest.TestFramework" Version="2.0.0" />
     <PackageReference Include="coverlet.collector" Version="1.0.1" />
+    <PackageReference Include="ServiceStack.Text" Version="5.7.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ArbitralSystem.Connectors.CryptoExchange\ArbitralSystem.Connectors.CryptoExchange.csproj" />
     <ProjectReference Include="..\ArbitralSystem.Test\ArbitralSystem.Test.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Bitmex.Net.Client, Version=1.4.3.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>bin\Debug\netcoreapp3.1\Bitmex.Net.Client.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>

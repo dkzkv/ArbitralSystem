@@ -13,6 +13,7 @@ using ArbitralSystem.Connectors.CryptoExchange.PublicConnectors;
 using ArbitralSystem.Domain.MarketInfo;
 using CryptoExchange.Net.Objects;
 using Huobi.Net;
+using Huobi.Net.Enums;
 using Huobi.Net.Interfaces;
 using Huobi.Net.Objects;
 
@@ -68,6 +69,7 @@ namespace ArbitralSystem.Connectors.CryptoExchange.PrivateConnectors
                         huobiOrderType,
                         placeOrder.Quantity ?? throw new ArgumentNullException($"Quantity for limit order should not be null, for Exchange: {Exchange}"),
                         clientOrderId: placeOrder.ClientOrderId,
+                        source: SourceType.Spot,
                         ct: token);
                     break;
                 default:

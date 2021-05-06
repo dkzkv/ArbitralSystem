@@ -134,7 +134,7 @@ namespace ArbitralSystem.Connectors.CryptoExchange.Converter
                 
                 cfg.CreateMap<BittrexSymbolSummary, PairPrice>()
                     .ForMember(destination => destination.ExchangePairName, o => o.MapFrom(source => source.Symbol))
-                    .ForMember(destination => destination.Price, o => o.MapFrom(source => source.Ask))
+                    .ForMember(destination => destination.Price, o => o.MapFrom(source => source.High))
                     .AfterMap((src, dest) => dest.Exchange = Exchange.Bittrex);
                 #endregion
 

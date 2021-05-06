@@ -112,8 +112,7 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQManagerService
             services.AddScoped<IServerRepository,ServerRepository>();
             services.AddScoped<IHeartBeatRepository,HeartBeatRepository>();
         }
-
-
+        
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider apiVersionDescriptionProvider)
         {
             if (env.IsDevelopment())

@@ -88,8 +88,7 @@ namespace ArbitralSystem.Distributor.Core.Jobs
             var currentOrderBook = _distributionOptions.TrimOrderBookDepth.HasValue
                 ? OrderbookTrimmer.Trim(distributorOrderBook, _distributionOptions.TrimOrderBookDepth.Value)
                 : distributorOrderBook;
-
-
+            
             await _publisher.Publish(currentOrderBook);
             if (_heartBeat != null)
                 await _heartBeat.Invoke(currentOrderBook);

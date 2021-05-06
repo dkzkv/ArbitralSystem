@@ -130,6 +130,7 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQOrderBookDistributorService
                             // RoundRobin
                             cfg.ReceiveEndpoint(Constants.Queues.MQOrderBookDistributorPrefix, e =>
                             {
+                                e.Durable = true;
                                 e.UseMessageRetry(r => r.Immediate(int.MaxValue));
                                 e.PrefetchCount = serviceOptions.MaxWorkersCount;
                                 e.ConfigureConsumer<OrderBookDistributorConsumer>(provider);
