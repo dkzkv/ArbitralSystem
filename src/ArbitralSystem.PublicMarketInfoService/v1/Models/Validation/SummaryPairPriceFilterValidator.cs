@@ -8,6 +8,7 @@ namespace ArbitralSystem.PublicMarketInfoService.v1.Models.Validation
     /// </summary>
     public class SummaryPairPriceFilterValidator : AbstractValidator<SummaryPairPriceFilter> 
     {
+        /// <inheritdoc />
         public SummaryPairPriceFilterValidator()
         {
             RuleFor(o => o.From).NotNull().When(o => o.To.HasValue)
