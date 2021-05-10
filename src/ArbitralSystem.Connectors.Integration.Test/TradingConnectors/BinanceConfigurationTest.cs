@@ -15,7 +15,7 @@ using ServiceStack.Text;
 namespace ArbitralSystem.Connectors.Integration.Test.TradingConnectors
 {
     [TestClass]
-    public class BinanceConfigurationTest : BaseConfigurationTest
+    internal class BinanceConfigurationTest : BaseConfigurationTest
     {
         private IPrivateConnector _privateConnector;
 
@@ -23,7 +23,7 @@ namespace ArbitralSystem.Connectors.Integration.Test.TradingConnectors
         public void Init()
         {
             var dtoConverter = new CryptoExchangeConverter();
-            ICredentials credentials = Configuration.GetSection("BinanceCredentials").Get<TestPrivateSettings>();
+            ICredentials credentials = GetCredentials(Exchange.Binance);
             _privateConnector = new BinancePrivateConnector(credentials, dtoConverter);
         }
 

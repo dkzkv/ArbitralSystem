@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading;
 using ArbitralSystem.Connectors.CryptoExchange.PrivateConnectors;
 using ArbitralSystem.Connectors.Integration.Test.TradingConnectors;
+using ArbitralSystem.Domain.MarketInfo;
 using Binance.Net;
 using Binance.Net.Interfaces;
 using Bitfinex.Net;
@@ -32,7 +33,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace ArbitralSystem.Connectors.Integration.Test
 {
     [TestClass]
-    public class NakedClients : BaseConfigurationTest
+    internal class NakedClients : BaseConfigurationTest
     {
         private IBinanceClient _binanceClient;
         private IBittrexClient _bittrexClient;
@@ -51,7 +52,8 @@ namespace ArbitralSystem.Connectors.Integration.Test
         [TestInitialize]
         public void Init()
         {
-            var binanceCreds = Configuration.GetSection("BinanceCredentials").Get<TestPrivateSettings>();
+            
+            var binanceCreds = GetCredentials(Exchange.Binance);
             _binanceClient = new BinanceClient();
             _binanceClient.SetApiCredentials(binanceCreds.ApiKey, binanceCreds.SecretKey);
             
@@ -59,7 +61,7 @@ namespace ArbitralSystem.Connectors.Integration.Test
             _coinExClient = new CoinExClient();
             
             
-            var huobiGreds = Configuration.GetSection("HuobiCredentials").Get<TestPrivateSettings>();
+            var huobiGreds = GetCredentials(Exchange.Huobi);
             _huobiClient = new HuobiClient();
             _huobiClient.SetApiCredentials(huobiGreds.ApiKey, huobiGreds.SecretKey);
             _huobiCommonClient = new CommonClient();

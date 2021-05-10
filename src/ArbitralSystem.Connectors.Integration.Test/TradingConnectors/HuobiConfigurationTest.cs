@@ -12,7 +12,7 @@ using ServiceStack.Text;
 namespace ArbitralSystem.Connectors.Integration.Test.TradingConnectors
 {
     [TestClass]
-    public class HuobiConfigurationTest : BaseConfigurationTest
+    internal class HuobiConfigurationTest : BaseConfigurationTest
     {
         private IPrivateConnector _privateConnector;
 
@@ -20,8 +20,9 @@ namespace ArbitralSystem.Connectors.Integration.Test.TradingConnectors
         public void Init()
         {
             var dtoConverter = new CryptoExchangeConverter();
-            var credentials = Configuration.GetSection("HuobiCredentials").Get<TestPrivateSettings>();
-            _privateConnector = new HuobiPrivateConnector(credentials.AccountID, credentials, dtoConverter);
+            var credentials = GetCredentials(Exchange.Huobi);
+            _privateConnector = new HuobiPrivateConnector(credentials.AccountId ?? throw new ArgumentException("Account id not defined for huobi settings."),
+                credentials, dtoConverter);
         }
         
         [TestMethod]

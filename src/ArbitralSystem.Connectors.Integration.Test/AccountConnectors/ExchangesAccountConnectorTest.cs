@@ -11,15 +11,15 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace ArbitralSystem.Connectors.Integration.Test.AccountConnectors
 {
     [TestClass]
-    public class ExchangeAccountConnectorTest : BaseConfigurationTest
+    internal class ExchangeAccountConnectorTest : BaseConfigurationTest
     {
         private  IAccountConnectorFactory _accountConnectorFactory;
         
         [TestInitialize]
         public void Init()
         {
-            var credentials = Configuration.GetSection("TradingSettings").Get<TestPrivateSettings[]>().ToArray<IPrivateExchangeSettings>();
-            _accountConnectorFactory= new CryptoExAccountConnectorFactory(credentials);
+            var credentials = GetCredentials(Exchange.Binance);
+            _accountConnectorFactory= new CryptoExAccountConnectorFactory(new IPrivateExchangeSettings[]{credentials});
         }
 
         [TestMethod]

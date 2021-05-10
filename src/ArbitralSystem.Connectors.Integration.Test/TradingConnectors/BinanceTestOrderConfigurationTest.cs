@@ -11,7 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace ArbitralSystem.Connectors.Integration.Test.TradingConnectors
 {
     [TestClass]
-    public class BinanceTestConfigurationTest : BaseConfigurationTest
+    internal class BinanceTestConfigurationTest : BaseConfigurationTest
     {
         private IPrivateConnector _privateTestConnector;
 
@@ -19,7 +19,7 @@ namespace ArbitralSystem.Connectors.Integration.Test.TradingConnectors
         public void Init()
         {
             var dtoConverter = new CryptoExchangeConverter();
-            ICredentials credentials = Configuration.GetSection("BinanceCredentials").Get<TestPrivateSettings>();
+            ICredentials credentials = GetCredentials(Exchange.Binance);
             _privateTestConnector = new BinanceTestPrivateConnector(credentials, dtoConverter);
         }
 
