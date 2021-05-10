@@ -42,7 +42,6 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQManagerService.v1.Controlle
             return Ok(_mapper.Map<Models.Paging.Page<ShortServerResult>>(result));
         }
         
-        
         /// <summary>
         /// Get server types
         /// </summary>
@@ -56,21 +55,6 @@ namespace ArbitralSystem.Distributor.MQDistributor.MQManagerService.v1.Controlle
                 exp = exp.Where(o => o.ToString().ToLower().Contains(filter.Query.ToLower()));
             var types =  _mapper.Map<IEnumerable<ServerTypeInfo>>(exp);
             return Ok(types);
-        }
-        
-        /// <summary>
-        /// Get server types
-        /// </summary>
-        /// <param name="filter"></param>
-        /// <returns></returns>
-        [HttpGet("statuses")]
-        public IActionResult GetStatuses([FromQuery] QueryFilter filter)
-        {
-            var exp = StatusHelper.GetAll();
-            if (!string.IsNullOrEmpty(filter.Query))
-                exp = exp.Where(o => o.ToString().ToLower().Contains(filter.Query.ToLower()));
-            var statuses =  _mapper.Map<IEnumerable<StatusInfo>>(exp);
-            return Ok(statuses);
         }
         
         /// <summary>
